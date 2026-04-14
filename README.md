@@ -1,206 +1,213 @@
 # Road Accident Severity Analysis
 
-A data science project that performs exploratory data analysis (EDA), data cleaning, outlier treatment, and visualization on the **US Accidents (March 2023)** dataset containing over **7.7 million** accident records across 46 features.
+[![Python](https://img.shields.io/badge/Python-3.x-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Pandas](https://img.shields.io/badge/Pandas-Data_Manipulation-150458.svg)](https://pandas.pydata.org/)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit_Learn-Machine_Learning-F7931E.svg)](https://scikit-learn.org/)
+[![Plotly](https://img.shields.io/badge/Plotly-239120?style=flat&logo=plotly&logoColor=white)](https://plotly.com/)
+
+A comprehensive end-to-end data science project performing exploratory data analysis (EDA), data preprocessing, feature engineering, and dimensionality reduction on the **US Accidents (March 2023)** dataset, which contains over **7.7 million** accident records spanning across the United States.
+
+This project is fully integrated with a custom-engineered **Obsidian Lens Data Intelligence Dashboard**—a highly responsive, beautiful dark-themed Single Page Application (SPA) powered by FastAPI and Plotly.js to explore live geospatial, temporal, and correlational insights.
 
 ---
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Dataset](#dataset)
-- [Project Workflow](#project-workflow)
-  - [1. Data Loading and Exploration](#1-data-loading-and-exploration)
-  - [2. Missing Value Analysis](#2-missing-value-analysis)
-  - [3. Data Cleaning](#3-data-cleaning)
-  - [4. Outlier Detection and Removal](#4-outlier-detection-and-removal)
-  - [5. Correlation Analysis](#5-correlation-analysis)
-  - [6. Data Visualization](#6-data-visualization)
-- [Technologies Used](#technologies-used)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Key Findings](#key-findings)
-- [License](#license)
+## 📑 Table of Contents
+- [Overview](#-overview)
+- [Obsidian Lens Web Dashboard](#-obsidian-lens-web-dashboard-new)
+- [System Architecture & Pipeline](#-system-architecture--pipeline)
+- [Dataset Details](#-dataset-details)
+- [Project Workflow](#-project-workflow)
+  - [Phase 1: Data Preprocessing](#phase-1-data-preprocessing)
+  - [Phase 2: Exploratory Data Analysis](#phase-2-exploratory-data-analysis)
+  - [Phase 3: Feature Engineering & PCA](#phase-3-feature-engineering--pca)
+- [Advanced Visualizations](#-advanced-visualizations)
+- [Key Analytical Insights](#-key-analytical-insights)
+- [Getting Started](#-getting-started)
+- [Technologies Used](#-technologies-used)
 
 ---
 
-## Overview
+## 🎯 Overview
 
-This project analyzes US traffic accident data to understand the factors influencing accident severity. The analysis pipeline covers data exploration, systematic handling of missing values, outlier removal using statistical methods (Z-Score and IQR), feature reduction through correlation analysis, and a series of visualizations that reveal patterns in accident severity, geography, weather, and time of day.
+This project analyzes traffic accident data to understand the factors driving accident severity across the US. The end-to-end pipeline handles everything from systematic imputation of missing values and multi-stage outlier removal to complex geospatial/temporal visualizations, skewness correction, categorical encoding, and Principal Component Analysis (PCA). The resulting optimized dataset is both heavily visualized for business intelligence and optimally refined for predictive machine learning models.
 
 ---
 
-## Dataset
+## 🌌 Obsidian Lens Web Dashboard (NEW)
+
+The project now includes a fully localized, state-of-the-art interactive web application mapping the complete Jupyter Data Science pipeline into a gorgeous UI/UX layout.
+
+**Dashboard Features:**
+- **Single Page Application (SPA):** Seamless routing across `Overview`, `Distribution`, `Correlation`, and `Insights` modules without page reloads.
+- **Dynamic Feature Selector:** An interactive dropdown replacing static outputs, allowing you to cycle through physical feature distributions (Temperature, Humidity, Visibility, etc.) entirely on the fly.
+- **Live Computations:** Instantly computes live **Skewness Indexes** and **Kurtosis Profiles** via backend endpoints for active feature selection.
+- **Interactive Plotly Visuals:** Tooltips, zooming, panning, and automatic responsive layout rescaling implemented for every graph (Geo Histograms, Temporal Heatmaps, PCA 2D Scatters).
+- **Recent Incident Feed:** The `/api/data-snapshot` feeds a live data table showing real accident structures and operational categorizations.
+
+## 🏗️ System Architecture & Pipeline
+
+```mermaid
+flowchart TD
+    %% Define Styles
+    classDef raw fill:#f9d0c4,stroke:#333,stroke-width:2px;
+    classDef process fill:#d4e6f1,stroke:#2874a6,stroke-width:2px;
+    classDef output fill:#d5f5e3,stroke:#1e8449,stroke-width:2px;
+    classDef web fill:#e8daef,stroke:#7d3c98,stroke-width:2px;
+
+    %% Nodes
+    Raw[(Raw Dataset\n7.7M Records)]:::raw
+    
+    subgraph Preprocessing [Data Preprocessing Pipeline]
+        Drop[Drop Irrelevant/High-Null Columns]:::process
+        Impute[Median/Mode Imputation for Weather/Time]:::process
+        Outlier[Outlier Filtering: Z-Score & IQR]:::process
+    end
+
+    subgraph FeatureEng [Feature Engineering & PCA]
+        Skew[Skewness Correction: Log/Yeo-Johnson]:::process
+        Encode[Categorical Label Encoding]:::process
+        Scale[StandardScaler Normalization]:::process
+        PCA[Dimensionality Reduction: PCA 95%]:::process
+    end
+
+    subgraph Dashboard [Obsidian Lens Dashboard]
+        FastAPI[FastAPI Backend\nData Routing & Aggregation]:::web
+        Plotly[Plotly.js Visual Engine]:::web
+        Tailwind[Tailwind CSS SPA UI]:::web
+    end
+
+    Ready(((ML-Ready\nOptimal Dataset))):::output
+
+    %% Flow
+    Raw --> Drop
+    Drop --> Impute
+    Impute --> Outlier
+    
+    Outlier --> Skew
+    Skew --> Encode
+    Encode --> Scale
+    Scale --> PCA
+    PCA --> Ready
+    
+    Outlier --> FastAPI
+    PCA --> FastAPI
+    FastAPI --> Plotly
+    Plotly --> Tailwind
+```
+
+---
+
+## 💾 Dataset Details
 
 | Property       | Detail                                           |
 |----------------|--------------------------------------------------|
 | **Source**      | US Accidents (March 2023)                        |
-| **File**        | `US_Accidents_March23.csv`                       |
 | **Records**     | 7,728,394                                        |
 | **Features**    | 46 columns                                       |
-| **Coverage**    | 49 US states                                     |
-| **Time Span**   | February 2016 -- March 2023                      |
+| **Coverage**    | 49 US contiguous states                          |
+| **Time Span**   | February 2016 – March 2023                      |
 
 ### Feature Categories
 
-| Category                | Features                                                                                                    |
+| Category                | Important Variables                                                                                         |
 |-------------------------|-------------------------------------------------------------------------------------------------------------|
-| **Identifiers**         | ID, Source                                                                                                  |
-| **Severity**            | Severity (1--4 scale)                                                                                       |
-| **Location**            | Start_Lat, Start_Lng, End_Lat, End_Lng, Street, City, County, State, Zipcode, Country                      |
-| **Time**                | Start_Time, End_Time, Timezone                                                                              |
-| **Weather**             | Temperature(F), Wind_Chill(F), Humidity(%), Pressure(in), Visibility(mi), Wind_Direction, Wind_Speed(mph), Precipitation(in), Weather_Condition |
-| **Road Features**       | Amenity, Bump, Crossing, Give_Way, Junction, No_Exit, Railway, Roundabout, Station, Stop, Traffic_Calming, Traffic_Signal, Turning_Loop |
-| **Daylight Indicators** | Sunrise_Sunset, Civil_Twilight, Nautical_Twilight, Astronomical_Twilight                                    |
+| **Severity**            | `Severity` (Scale 1–4 indicating accident impact on traffic)                                                 |
+| **Location**            | `Start_Lat`, `Start_Lng`, `City`, `State`, `Zipcode`                                                        |
+| **Time/Weather**        | `Start_Time`, `Temperature(F)`, `Humidity(%)`, `Visibility(mi)`, `Wind_Speed(mph)`, `Weather_Condition`       |
+| **Road Features**       | `Traffic_Signal`, `Junction`, `Crossing`, `Station`, `Stop` (Boolean Indicators)                             |
 
 ---
 
-## Project Workflow
+## 🚀 Project Workflow
 
-### 1. Data Loading and Exploration
+### Phase 1: Data Preprocessing
+- **Data Reduction:** Dropped overly-sparse columns (`End_Lat`, `End_Lng`) and non-impactful identifiers.
+- **Strategic Imputation:** 
+  - Median combinations for `Wind_Chill` and `Temperature`.
+  - Group-by based imputation for `Humidity`, `Pressure`, and `Visibility` dependent on `State` and `Weather_Condition`.
+  - Mode imputation for categorical sequences.
+- **Robust Outlier Removal:**
+  - Applied **Z-score** (thresh=5) on weather properties.
+  - Used **IQR method** for scaling distance and visibility thresholds.
+  - Reduced dataset size cleanly by ~2 million skewed/anomalous observations.
 
-- Load the dataset using Pandas
-- Preview the first and last records (`head`, `tail`)
-- Generate summary statistics (`describe`)
-- Inspect data types and memory usage (`info`)
-- Check dataset dimensions (`shape`) and column names
+### Phase 2: Exploratory Data Analysis
+- Distribution visualization to unbalance factors.
+- Correlation matrices to observe multicollinearity (e.g., dropping `Wind_Chill(F)` due to extreme positive relation to `Temperature(F)`).
+- Visuals natively integrated into the web dashboard.
 
-### 2. Missing Value Analysis
-
-- Compute null counts per column
-- Visualize missing values with:
-  - Horizontal bar chart of null counts per column
-  - Heatmap of missing values on sampled data (1,000 rows)
-
-### 3. Data Cleaning
-
-**Columns Dropped:**
-- `End_Lat`, `End_Lng` -- high null count (~3.4M missing)
-- `Airport_Code`, `Weather_Timestamp` -- not relevant to severity analysis
-- `Description`, `Street`, `Zipcode`, `ID`, `County`, `Turning_Loop` -- identifiers or low-value features
-- `Civil_Twilight`, `Nautical_Twilight`, `Astronomical_Twilight` -- redundant with `Sunrise_Sunset`
-
-**Missing Value Imputation Strategies:**
-
-| Column              | Strategy                                       |
-|---------------------|------------------------------------------------|
-| City                | Random fill from low-frequency cities          |
-| Wind_Chill(F)       | Median imputation                              |
-| Temperature(F)      | Median imputation                              |
-| Wind_Direction      | Mode imputation (invalid values set to NaN first) |
-| Weather_Condition   | Filled with `'Fair'`                           |
-| Humidity(%)         | Group-wise median by State                     |
-| Visibility(mi)      | Group-wise median by Weather_Condition          |
-| Wind_Speed(mph)     | Filled with constant `6.8`                     |
-| Timezone            | Group-wise mode by State                       |
-| Pressure(in)        | Group-wise median by State                     |
-| Precipitation(in)   | Filled with `0` (clear weather assumption)     |
-| Sunrise_Sunset      | Mode imputation                                |
-
-### 4. Outlier Detection and Removal
-
-Three-stage outlier removal pipeline:
-
-1. **Z-Score Filtering** (threshold = 5)
-   - Applied to: `Temperature(F)`, `Wind_Chill(F)`, `Pressure(in)`, `Wind_Speed(mph)`
-   - Result: 7,728,394 → 7,654,777 rows
-
-2. **IQR Filtering** (1.5 * IQR)
-   - Applied to: `Distance(mi)`, `Visibility(mi)`, `Precipitation(in)`, `Humidity(%)`
-   - Result: 7,654,777 → 5,313,815 rows
-
-3. **Sanity Threshold Filtering**
-   - Wind_Speed < 200 mph
-   - Temperature > -100 F
-   - Visibility < 200 mi
-
-4. **Duplicate Removal**
-   - 76,643 duplicate rows removed
-   - Final dataset: **5,237,172 rows x 32 columns**
-
-### 5. Correlation Analysis
-
-- Generated correlation heatmaps before and after feature reduction
-- Identified and removed `Wind_Chill(F)` due to high correlation with `Temperature(F)`
-- Validated with a post-removal correlation heatmap
-
-### 6. Data Visualization
-
-| Visualization                        | Type          | Purpose                                        |
-|--------------------------------------|---------------|------------------------------------------------|
-| Null values bar chart                | Bar (H)       | Identify columns with missing data             |
-| Missing values heatmap               | Heatmap       | Visualize null patterns across sampled rows     |
-| Severity distribution                | Count plot    | Understand target variable balance              |
-| Severity vs Visibility               | Box plot      | Examine visibility impact on severity           |
-| Day vs Night severity                | Count plot    | Compare severity across daylight conditions     |
-| Wind speed distribution              | Histogram     | Inspect weather feature distribution            |
-| Geographic accident hotspots         | Scatter plot  | Map accident locations by severity              |
-| Feature correlation matrix           | Heatmap       | Identify multicollinearity                      |
-| Temperature density distribution     | KDE plot      | Smooth distribution view of temperature         |
-| Box plots (post-cleaning)            | Box plot grid | Validate outlier removal effectiveness          |
+### Phase 3: Feature Engineering & PCA
+- **Skewness Correction:** Applied `np.log1p` on Right-skewed data (`Distance(mi)`, `Pressure(in)`) and **Yeo-Johnson PowerTransformer** on complex skew combinations.
+- **Label Encoding:** Dynamically isolated all `object` and `boolean` columns to translate them into ML-compatible numeral structures via `LabelEncoder`.
+- **Scaling:** Used `StandardScaler` to bring all remaining numerical variables to a uniform plane.
+- **Dimensionality Reduction (PCA):** Synthesized the complete matrix through Principal Component Analysis ensuring **95% explained variance retention**, optimizing the feature space for faster, scalable modeling.
 
 ---
 
-## Technologies Used
+## 📊 Advanced Visualizations
 
-| Library        | Version | Purpose                                    |
-|----------------|---------|--------------------------------------------|
-| Python         | 3.x     | Programming language                       |
-| NumPy          | --      | Numerical computations                     |
-| Pandas         | --      | Data manipulation and analysis             |
-| Matplotlib     | --      | Static visualizations                      |
-| Seaborn        | --      | Statistical visualizations                 |
-| SciPy          | --      | Z-score computation for outlier detection  |
+The project includes custom advanced visual interpretations ensuring robust geographical and temporal inferences natively available in the Web SPA and the Notebook:
+
+1. 🗺️ **Spatial Accident Density Map:** Rendering the continental mapping of the US strictly through the longitude and latitude scatter of auto incidents (effectively tracing US infrastructure autonomously).
+2. 🕒 **Temporal Heatmap:** Correlating *Hour of Day vs. Day of Week* to isolate distinct weekday commuter rush-hour disaster periods relative to sparse weekend spreads.
+3. 🎻 **Violin Plot distributions:** Demonstrating Temperature spans tightly across various accident Severity classes.
+4. 🚥 **Traffic Infrastructure Impact:** Assessing crash frequencies across Traffic Signals, Crossings, Junctions, and Roundabouts parameters.
+5. 🏙️ **Top 15 Most Accident-Prone States:** Highlighting macro-level volumetric hazard comparisons reflecting vehicular volume density.
+6. 🌤️ **Weather Condition vs. Severity (100% Stacked Bar):** Exploring the proportional balance of severity states against the Top 5 macro weather structures (answering if adverse weather guarantees more severe encounters).
+7. 🧠 **PCA 2D Cluster Extraction Projection:** Leveraging a mathematical `PC1 vs PC2` mapping vector space, accurately grouping the machine learning-ready components by severity clustering to guarantee predictive modeling success.
 
 ---
 
-## Getting Started
+## 💡 Key Analytical Insights
+
+- **Severity Baseline:** **Severity 2** dominates entirely, making it critical but severely imbalanced for predictive engines.
+- **Rush Hour Risk:** Weekday temporal data presents intense spikes localized directly within the 7:00–9:00 AM and 3:00–6:00 PM commuting timeframes. Low rates persist between midnight and 5:00 AM.
+- **Intersectional Hazards:** High accident rates correlate heavily parallel to **Traffic Signals and Crossings**, designating immediate mitigation emphasis to urban signal intersections.
+- **Weather Moderation:** Remarkably, dense frequency occurs during *moderate* standard temperatures (40°F–80°F). However, severity spikes upward (Scores 3 & 4) when pushed into temperature distribution extremes.
+- **Geographic Saturation:** Raw volume directly correlates natively with dense populace areas: California (CA), Florida (FL), and Texas (TX).
+
+---
+
+## 🛠️ Technologies Used
+
+- **Python 3.x**
+- **Data Manipulation:** `pandas`, `numpy`
+- **Visualization:** `plotly`, `matplotlib`, `seaborn`
+- **Statistical/Machine Learning:** `scikit-learn` (PCA, StandardScaler, LabelEncoder, PowerTransformer), `scipy`
+- **Web App:** `FastAPI`, `uvicorn`, HTML5, `TailwindCSS`
+
+---
+
+## ⚙️ Getting Started
 
 ### Prerequisites
 
 ```bash
-pip install numpy pandas matplotlib seaborn scipy
+pip install -r requirements.txt
 ```
+*(Dependencies include numpy, pandas, matplotlib, plotly, seaborn, scipy, scikit-learn, fastapi, uvicorn)*
 
-### Running the Notebook
+### Option A: Launching the Obsidian Lens Web Dashboard (Recommended)
 
-1. Clone the repository:
+1. Ensure you have activated the environment and run the backend script:
    ```bash
-   git clone https://github.com/<your-username>/ROAD_ACCIDENT_SEVERITY_ANALYSIS.git
-   cd ROAD_ACCIDENT_SEVERITY_ANALYSIS
+   uvicorn backend.main:app --reload
    ```
+2. Navigate to `http://127.0.0.1:8000/` in your web browser. The FastAPI system will natively mount the fully functional SPA frontend and deploy all analytical queries live.
 
-2. Place the dataset file `US_Accidents_March23.csv` in the project root directory.
+### Option B: Running the Jupyter Pipeline
 
-3. Open and run the notebook:
+1. Ensure the raw `US_Accidents_March23.csv` rests directly in the working directory.
+2. Launch the fully enhanced Jupyter Notebook:
    ```bash
    jupyter notebook Week-3.ipynb
    ```
-
-> **Note:** The dataset file path in the notebook is set to `C:\ROAD_ACCIDENT_SEVERITY_ANALYSIS\US_Accidents_March23.csv`. Update this path if your project directory differs.
-
----
-
-## Project Structure
-
-```
-ROAD_ACCIDENT_SEVERITY_ANALYSIS/
-├── Week-3.ipynb                 # Main analysis notebook
-├── US_Accidents_March23.csv     # Dataset (not included in repo)
-└── README.md                    # Project documentation
-```
+3. Run all cells from top to bottom ensuring interactive visualization modules are successfully painted.
 
 ---
 
-## Key Findings
+## 📝 License
 
-- **Severity 2** dominates the dataset, accounting for ~80% of all records
-- **Temperature** and **Wind Chill** are highly correlated (r > 0.9), making one of them redundant
-- Accidents are significantly more frequent during **daytime** compared to nighttime
-- **Geographic clustering** of accidents is concentrated along major highway corridors and urban centers (California, Texas, Florida)
-- Most weather-related features (humidity, visibility, precipitation) show weak direct correlation with severity, suggesting severity depends more on road and traffic conditions
-
----
-
-## License
-
-This project is for educational and research purposes. The dataset is sourced from publicly available US accident records.
+This project is provisioned strictly for analytical and educational research operations. The underlying origin data is provided through publicly accessible US records schemas.

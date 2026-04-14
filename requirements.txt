@@ -1,0 +1,16 @@
+# API Backend Core
+fastapi
+uvicorn[standard]
+
+# Data Processing & Math
+pandas
+numpy
+scipy
+
+# Machine Learning & Transformation
+scikit-learn
+
+# Visualization (Backend & Legacy Scripts)
+plotly
+matplotlib
+seaborn

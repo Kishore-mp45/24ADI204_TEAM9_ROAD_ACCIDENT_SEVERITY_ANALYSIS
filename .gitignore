@@ -1,0 +1,14 @@
+# Datasets and large files
+US_Accidents_March23.csv
+*.csv
+
+# Python cache and environments
+__pycache__/
+*.pyc
+.venv/
+env/
+venv/
+.env
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
