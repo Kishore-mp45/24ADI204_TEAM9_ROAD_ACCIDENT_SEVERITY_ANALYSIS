@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+/* ========================================================================
+   OBSIDIAN LENS — Design System
+   A premium dark-mode dashboard theme with glassmorphism & fluid accents.
+   ======================================================================== */
+
+@theme {
+  /* ── Color Palette ── */
+  --color-background: #060a10;
+  --color-surface: #0b1120;
+  --color-surface-raised: #111827;
+  --color-surface-overlay: #1a2332;
+  --color-surface-glass: rgba(17, 24, 39, 0.55);
+
+  --color-border: rgba(148, 163, 184, 0.08);
+  --color-border-hover: rgba(148, 163, 184, 0.15);
+
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+
+  /* Accent Blues */
+  --color-accent: #6ea8fe;
+  --color-accent-dim: #3b82f6;
+  --color-accent-glow: rgba(59, 130, 246, 0.15);
+
+  /* Semantic Colors */
+  --color-cyan: #22d3ee;
+  --color-cyan-dim: #06b6d4;
+  --color-emerald: #34d399;
+  --color-emerald-dim: #10b981;
+  --color-amber: #fbbf24;
+  --color-amber-dim: #f59e0b;
+  --color-rose: #fb7185;
+  --color-rose-dim: #f43f5e;
+  --color-violet: #a78bfa;
+  --color-violet-dim: #8b5cf6;
+  --color-fuchsia: #e879f9;
+
+  /* Chart Palette */
+  --color-chart-1: #6ea8fe;
+  --color-chart-2: #22d3ee;
+  --color-chart-3: #a78bfa;
+  --color-chart-4: #34d399;
+  --color-chart-5: #fbbf24;
+  --color-chart-6: #fb7185;
+  --color-chart-7: #e879f9;
+  --color-chart-8: #f97316;
+
+  /* Severity Scale */
+  --color-sev1: #34d399;
+  --color-sev2: #6ea8fe;
+  --color-sev3: #fbbf24;
+  --color-sev4: #fb7185;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Radii */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+}
+
+/* ── Base ── */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.15); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.25); }
+
+/* ── Glass Card ── */
+.glass-card {
+  background: var(--color-surface-glass);
+  backdrop-filter: blur(24px) saturate(1.3);
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  border: 1px solid var(--color-border);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.glass-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: 0 0 30px rgba(59,130,246,0.04);
+}
+
+/* ── KPI Glow ── */
+.kpi-glow {
+  position: relative;
+}
+.kpi-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(110,168,254,0.2), rgba(34,211,238,0.1), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── Nav Link ── */
+.nav-link {
+  position: relative;
+  transition: all 0.2s ease;
+}
+.nav-link.active {
+  color: var(--color-accent) !important;
+  background: rgba(59, 130, 246, 0.08);
+}
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60%;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+/* ── Recharts Tooltip Override ── */
+.recharts-default-tooltip {
+  background: rgba(11,17,32,0.92) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(148,163,184,0.1) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+  padding: 12px 16px !important;
+}
+.recharts-tooltip-label {
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  margin-bottom: 4px !important;
+}
+.recharts-tooltip-item {
+  color: var(--color-text-secondary) !important;
+  font-size: 0.75rem !important;
+  padding: 1px 0 !important;
+}
+
+/* ── Fade-in Animation ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+.animate-delay-1 { animation-delay: 0.05s; }
+.animate-delay-2 { animation-delay: 0.1s; }
+.animate-delay-3 { animation-delay: 0.15s; }
+.animate-delay-4 { animation-delay: 0.2s; }
+
+/* ── Pulse Dot ── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Skeleton Loader ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--color-surface-raised) 25%, var(--color-surface-overlay) 50%, var(--color-surface-raised) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-lg);
+}

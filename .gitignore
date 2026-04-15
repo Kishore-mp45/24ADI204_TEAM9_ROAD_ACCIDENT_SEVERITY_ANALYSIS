@@ -12,3 +12,8 @@ venv/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+
+# React Dashboard
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.swc/
