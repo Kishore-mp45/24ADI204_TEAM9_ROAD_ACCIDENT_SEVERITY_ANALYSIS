@@ -8,9 +8,10 @@ interface ChartCardProps {
   action?: ReactNode;
   loading?: boolean;
   height?: number;
+  interpretation?: ReactNode;
 }
 
-export function ChartCard({ title, subtitle, children, className = "", action, loading, height = 340 }: ChartCardProps) {
+export function ChartCard({ title, subtitle, children, className = "", action, loading, height = 340, interpretation }: ChartCardProps) {
   return (
     <div className={`glass-card rounded-2xl p-6 flex flex-col ${className}`}>
       <div className="flex justify-between items-start mb-4">
@@ -23,6 +24,13 @@ export function ChartCard({ title, subtitle, children, className = "", action, l
       <div style={{ width: "100%", height: height, position: "relative" }}>
         {loading ? <ChartSkeleton /> : children}
       </div>
+      {interpretation && (
+        <div className="mt-4 pt-4 border-t border-[rgba(148,163,184,0.1)]">
+          <div className="text-xs text-[var(--color-text-secondary)] leading-relaxed space-y-1">
+            {interpretation}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

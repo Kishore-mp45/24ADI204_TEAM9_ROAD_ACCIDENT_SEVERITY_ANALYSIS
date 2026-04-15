@@ -30,15 +30,26 @@ export default function GeospatialPage() {
       <div className="grid grid-cols-12 gap-6">
         {/* Scatter Plot — Accident Location by Severity (Chart #7) */}
         <div className="col-span-12">
-          <ChartCard title="Scatter Plot — Accident Location by Severity" subtitle="10,000 sample points colored by severity level across the continental US" loading={geoSevLoading} height={500}>
+          <ChartCard 
+            title="Scatter Plot — Accident Location by Severity" 
+            subtitle="10,000 sample points colored by severity level across the continental US" 
+            loading={geoSevLoading} 
+            height={500}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#34d399]">
+                <li>Effectively traces the continental United States highway and urban infrastructure autonomously using pure auto-incident coordinates.</li>
+                <li>Reveals that major severity events form distinct clusters heavily biased toward massive coastal populations and eastern urban grids.</li>
+              </ul>
+            }
+          >
             {geoSevData && geoSevData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart margin={{ top: 10, right: 20, bottom: 30, left: 20 }}>
                   <CartesianGrid {...GRID_STYLE} />
                   <XAxis dataKey="lng" type="number" domain={[-130, -65]} name="Longitude" {...AXIS_STYLE} tickLine={false} axisLine={false}
-                    tickFormatter={(v: number) => `${v}°W`} label={{ value: "Longitude", position: "bottom", fill: "#64748b", fontSize: 11, offset: 10 }} />
+                    tickFormatter={(v: number) => `${v}°W`} label={{ value: "Longitude", position: "bottom", fill: "#f8fafc", fontSize: 11, offset: 10 }} />
                   <YAxis dataKey="lat" type="number" domain={[24, 50]} name="Latitude" {...AXIS_STYLE} tickLine={false} axisLine={false}
-                    tickFormatter={(v: number) => `${v}°N`} label={{ value: "Latitude", angle: -90, position: "insideLeft", fill: "#64748b", fontSize: 11 }} />
+                    tickFormatter={(v: number) => `${v}°N`} label={{ value: "Latitude", angle: -90, position: "insideLeft", fill: "#f8fafc", fontSize: 11 }} />
                   <ZAxis range={[10, 10]} />
                   <Tooltip {...TOOLTIP_STYLE}
                     formatter={(value: number, name: string) => {
@@ -63,15 +74,26 @@ export default function GeospatialPage() {
 
         {/* Spatial Accident Density Map (Chart #8) */}
         <div className="col-span-12">
-          <ChartCard title="Spatial Accident Density Map" subtitle="Geospatial density analysis — brighter = higher concentration" loading={densityLoading} height={500}>
+          <ChartCard 
+            title="Spatial Accident Density Map" 
+            subtitle="Geospatial density analysis — brighter = higher concentration" 
+            loading={densityLoading} 
+            height={500}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#22d3ee]">
+                <li>Translates raw overlapping coordinate volumes into an intensity gradient validating extreme regional stress points.</li>
+                <li>Highlights massive concentration nodes around the I-95 corridor (East Coast), California, and Texas metropolitan sectors.</li>
+              </ul>
+            }  
+          >
             {densityData && densityData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart margin={{ top: 10, right: 20, bottom: 30, left: 20 }}>
                   <CartesianGrid {...GRID_STYLE} />
                   <XAxis dataKey="lng" type="number" domain={[-130, -65]} name="Longitude" {...AXIS_STYLE} tickLine={false} axisLine={false}
-                    tickFormatter={(v: number) => `${v}°W`} label={{ value: "Longitude", position: "bottom", fill: "#64748b", fontSize: 11, offset: 10 }} />
+                    tickFormatter={(v: number) => `${v}°W`} label={{ value: "Longitude", position: "bottom", fill: "#f8fafc", fontSize: 11, offset: 10 }} />
                   <YAxis dataKey="lat" type="number" domain={[24, 50]} name="Latitude" {...AXIS_STYLE} tickLine={false} axisLine={false}
-                    tickFormatter={(v: number) => `${v}°N`} label={{ value: "Latitude", angle: -90, position: "insideLeft", fill: "#64748b", fontSize: 11 }} />
+                    tickFormatter={(v: number) => `${v}°N`} label={{ value: "Latitude", angle: -90, position: "insideLeft", fill: "#f8fafc", fontSize: 11 }} />
                   <ZAxis range={[8, 8]} />
                   <Tooltip {...TOOLTIP_STYLE}
                     formatter={(value: number, name: string) => {

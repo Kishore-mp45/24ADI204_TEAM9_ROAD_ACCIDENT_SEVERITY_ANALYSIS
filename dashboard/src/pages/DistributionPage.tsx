@@ -79,10 +79,10 @@ function ViolinPlot({ data }: { data: { severity: number; label: string; points:
             ))}
           </defs>
           <CartesianGrid {...GRID_STYLE} />
-          <XAxis dataKey="temp" {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}°F`} />
+          <XAxis dataKey="temp" type="number" domain={["auto", "auto"]} {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v.toFixed(0)}°F`} />
           <YAxis {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => v.toFixed(3)} />
           <Tooltip {...TOOLTIP_STYLE}
-            labelFormatter={(label) => `Temperature: ${label}°F`}
+            labelFormatter={(label: number) => `Temperature: ${label.toFixed(2)}°F`}
             formatter={(value: number, name: string) => {
               const sevNum = name.replace("sev", "");
               return [value.toFixed(5), `Severity ${sevNum}`];
@@ -91,7 +91,7 @@ function ViolinPlot({ data }: { data: { severity: number; label: string; points:
           <Legend wrapperStyle={{ fontSize: 11, color: "#94a3b8" }} />
           {data.map((sev, i) => (
             <Area key={sev.severity} type="monotone" dataKey={`sev${sev.severity}`} name={`Severity ${sev.severity}`}
-              stroke={SEVERITY_COLORS[i]} strokeWidth={2} fill={`url(#violinGrad${sev.severity})`}
+              connectNulls={true} stroke={SEVERITY_COLORS[i]} strokeWidth={2} fill={`url(#violinGrad${sev.severity})`}
               animationDuration={1500} dot={false} />
           ))}
         </AreaChart>
@@ -140,6 +140,12 @@ export default function DistributionPage() {
             subtitle="Density & spread analysis"
             height={380}
             loading={histLoading}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#6ea8fe]">
+                <li>Visualizes the raw physical spread of the selected natural or operational variable prior to skewness corrections.</li>
+                <li>Allows immediate identification of central tendencies and outlier extremities critical for scaling techniques (StandardScaler).</li>
+              </ul>
+            }
             action={
               <select value={feature} onChange={(e) => setFeature(e.target.value)}
                 className="bg-[rgba(17,24,39,0.5)] border border-[rgba(148,163,184,0.1)] text-sm text-[var(--color-text-primary)] rounded-xl px-4 py-2 focus:outline-none focus:ring-1 focus:ring-[rgba(110,168,254,0.3)] cursor-pointer">
@@ -184,14 +190,36 @@ export default function DistributionPage() {
 
         {/* Violin Plot (Chart #10) */}
         <div className="col-span-12">
-          <ChartCard title="Violin Plot — Temperature Distribution Across Severity Levels" subtitle="Density curves overlaid per severity with summary statistics" loading={violinLoading} height={420}>
+          <ChartCard 
+            title="Temperature Distribution Across Severity Levels" 
+            subtitle="Density curves overlaid per severity with summary statistics" 
+            loading={violinLoading} 
+            height={420}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#22d3ee]">
+                <li>Displays symmetric density distribution curves natively highlighting temperature range commonalities for each severity band.</li>
+                <li>Reveals that while the absolute median remains stable, critical severities present with longer, thinner distribution tails implying extreme weather correlations.</li>
+              </ul>
+            }
+          >
             {violinData && <ViolinPlot data={violinData} />}
           </ChartCard>
         </div>
 
         {/* Box Plot */}
         <div className="col-span-12">
-          <ChartCard title="Temperature Distribution by Severity" subtitle="Box plot — hover for detailed statistics" loading={boxLoading} height={340}>
+          <ChartCard 
+            title="Temperature Distribution by Severity" 
+            subtitle="Box plot — hover for detailed statistics" 
+            loading={boxLoading} 
+            height={340}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#fbbf24]">
+                <li>Quartile visualizations expose strict Interquartile Ranges (IQR) where the bulk (50%) of traffic incidents mathematically occur.</li>
+                <li>Calculates precise medians against means to visualize minor statistical drags (skew mapping) associated with temperature anomalies.</li>
+              </ul>
+            }
+          >
             {boxData && <BoxPlotChart data={boxData} />}
           </ChartCard>
         </div>

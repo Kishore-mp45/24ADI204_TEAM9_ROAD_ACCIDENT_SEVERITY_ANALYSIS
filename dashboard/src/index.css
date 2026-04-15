@@ -191,3 +191,39 @@ body {
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: var(--radius-lg);
 }
+
+/* ========================================================================
+   LIGHT THEME OVERRIDES
+   ======================================================================== */
+.light {
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f1f5f9;
+  --color-surface-overlay: #e2e8f0;
+  --color-surface-glass: rgba(255, 255, 255, 0.75);
+
+  --color-border: rgba(15, 23, 42, 0.08);
+  --color-border-hover: rgba(15, 23, 42, 0.15);
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+}
+
+/* Light Theme Header Glass Background Hack */
+.light header {
+  background: rgba(248, 250, 252, 0.8) !important;
+}
+
+/* Tooltip Override for Light Theme to maintain readability */
+.light .recharts-default-tooltip {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+}
+.light .recharts-tooltip-label {
+  color: #0f172a !important;
+}
+.light .recharts-tooltip-item {
+  color: #475569 !important;
+}

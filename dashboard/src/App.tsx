@@ -6,9 +6,11 @@ import DistributionPage from "@/pages/DistributionPage";
 import CorrelationPage from "@/pages/CorrelationPage";
 import GeospatialPage from "@/pages/GeospatialPage";
 import InsightsPage from "@/pages/InsightsPage";
+import MetricsPage from "@/pages/MetricsPage";
 
 const pages: Record<string, React.ComponentType> = {
   overview: OverviewPage,
+  metrics: MetricsPage,
   distribution: DistributionPage,
   correlation: CorrelationPage,
   geospatial: GeospatialPage,

@@ -5,7 +5,7 @@ import {
 } from "recharts";
 import { ChartCard } from "@/components/ui/ChartCard";
 import { fetchCorrHeat, fetchMissingBar, fetchPcaLine, fetchPcaScatter, fetchStateBubble } from "@/lib/api";
-import { SEVERITY_COLORS, CHART_COLORS, AXIS_STYLE, GRID_STYLE, useAsyncData } from "@/lib/charts";
+import { SEVERITY_COLORS, CHART_COLORS, AXIS_STYLE, GRID_STYLE, STATE_MAP, useAsyncData } from "@/lib/charts";
 
 const TOOLTIP_STYLE = {
   contentStyle: { background: "rgba(11,17,32,0.92)", border: "1px solid rgba(148,163,184,0.1)", borderRadius: "0.75rem" },
@@ -19,9 +19,10 @@ function CorrelationHeatmap({ data }: { data: { columns: string[]; cells: { x: s
   const size = Math.min(44, Math.floor(500 / columns.length));
 
   function getColor(v: number) {
-    if (v > 0) return `rgba(110, 168, 254, ${Math.abs(v) * 0.85})`;
-    if (v < 0) return `rgba(251, 113, 133, ${Math.abs(v) * 0.85})`;
-    return "rgba(148,163,184,0.05)";
+    const intensity = Math.abs(v) > 0.1 ? 0.2 + Math.abs(v) * 0.8 : Math.abs(v);
+    if (v > 0) return `rgba(34, 211, 238, ${intensity})`; // High Contrast Vibrant Cyan
+    if (v < 0) return `rgba(249, 115, 22, ${intensity})`; // High Contrast Vibrant Orange
+    return "rgba(255,255,255,0.02)";
   }
 
   return (
@@ -56,13 +57,13 @@ function CorrelationHeatmap({ data }: { data: { columns: string[]; cells: { x: s
           </div>
         ))}
         <div className="flex items-center justify-center gap-3 mt-4 ml-24">
-          <span className="text-[9px] text-[#fb7185]">−1 (Negative)</span>
+          <span className="text-[9px] text-[#f97316] uppercase font-bold">−1 (Negative)</span>
           <div className="flex gap-0.5">
-            {[-0.8, -0.5, -0.2, 0, 0.2, 0.5, 0.8].map((v) => (
+            {[-1.0, -0.8, -0.5, -0.2, 0, 0.2, 0.5, 0.8, 1.0].map((v) => (
               <div key={v} className="w-5 h-3 rounded-sm" style={{ background: getColor(v) }} />
             ))}
           </div>
-          <span className="text-[9px] text-[#6ea8fe]">+1 (Positive)</span>
+          <span className="text-[9px] text-[#22d3ee] uppercase font-bold">+1 (Positive)</span>
         </div>
       </div>
     </div>
@@ -87,19 +88,40 @@ export default function CorrelationPage() {
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8">
-          <ChartCard title="Feature Heatmap" subtitle="Pearson correlation coefficients" loading={corrLoading} height={500}>
+          <ChartCard 
+            title="Feature Heatmap" 
+            subtitle="Pearson correlation coefficients" 
+            loading={corrLoading} 
+            height={500}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#22d3ee]">
+                <li>Exposes severe multicollinearity directly between wind chill variables and standard ambient temperature.</li>
+                <li>Identifies mathematically distinct, isolated vectors (like precipitation scale) which remain independent from standard climate readings.</li>
+              </ul>
+            }  
+          >
             {corrData && <CorrelationHeatmap data={corrData} />}
           </ChartCard>
         </div>
 
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <ChartCard title="Missing Values Mapping" loading={missingLoading} height={240}>
+          <ChartCard 
+            title="Missing Values Mapping" 
+            loading={missingLoading} 
+            height={240}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#fb7185]">
+                <li>Demonstrates critical data dropout rates primarily affecting complex meteorological variables.</li>
+                <li>Validates the data cleaning necessity for systematically dropping highly sparse vectors prior to modeling.</li>
+              </ul>
+            }  
+          >
             {missingData && missingData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={missingData.slice(0, 10)} layout="vertical" barCategoryGap="16%">
                   <CartesianGrid {...GRID_STYLE} horizontal={false} />
                   <XAxis type="number" {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-                  <YAxis type="category" dataKey="feature" width={90} {...AXIS_STYLE} tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
+                  <YAxis type="category" dataKey="feature" width={90} {...AXIS_STYLE} tickLine={false} axisLine={false} tick={{ fill: "#f8fafc", fontSize: 9 }} />
                   <Tooltip {...TOOLTIP_STYLE} formatter={(value: number) => [value.toLocaleString(), "Null Count"]} />
                   <Bar dataKey="nullCount" radius={[0, 6, 6, 0]} animationDuration={1000}>
                     {missingData.slice(0, 10).map((_: unknown, i: number) => (
@@ -115,7 +137,18 @@ export default function CorrelationPage() {
             )}
           </ChartCard>
 
-          <ChartCard title="PCA Explained Variance" subtitle="Cumulative variance ratio" loading={pcaLineLoading} height={240}>
+          <ChartCard 
+            title="PCA Explained Variance" 
+            subtitle="Cumulative variance ratio" 
+            loading={pcaLineLoading} 
+            height={240}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#34d399]">
+                <li>Maps PCA effectiveness in condensing physical array dimensionality.</li>
+                <li>Confirms exactly 95% of total mathematical variance is retained within a reduced component layout.</li>
+              </ul>
+            }  
+          >
             {pcaLineData && (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={pcaLineData}>
@@ -126,7 +159,7 @@ export default function CorrelationPage() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid {...GRID_STYLE} />
-                  <XAxis dataKey="component" {...AXIS_STYLE} tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
+                  <XAxis dataKey="component" {...AXIS_STYLE} tickLine={false} axisLine={false} tick={{ fill: "#f8fafc", fontSize: 9 }} />
                   <YAxis {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
                   <Tooltip {...TOOLTIP_STYLE} formatter={(value: number, name: string) => [`${value}%`, name === "cumulative" ? "Cumulative" : "Variance"]} />
                   <Area type="monotone" dataKey="cumulative" stroke="#a78bfa" strokeWidth={2} fill="url(#pcaGrad)" dot={{ r: 3, fill: "#a78bfa" }} animationDuration={1500} />
@@ -142,7 +175,18 @@ export default function CorrelationPage() {
           <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-6">Scatter Analysis & Relationships</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* PCA Scatter — single Scatter with Cell coloring */}
-            <ChartCard title="PCA 2D Cluster Extraction" subtitle="Principal components colored by severity" loading={pcaScatterLoading} height={360}>
+            <ChartCard 
+              title="PCA 2D Cluster Extraction" 
+              subtitle="Principal components colored by severity" 
+              loading={pcaScatterLoading} 
+              height={360}
+              interpretation={
+                <ul className="list-disc pl-4 marker:text-[#6ea8fe]">
+                  <li>Validates machine learning readiness by plotting synthesized feature combinations mathematically mapped onto a 2D constraint plane.</li>
+                  <li>Observes critical isolating clustering behaviors dictating the predictability bounds of future classifier inference models.</li>
+                </ul>
+              }  
+            >
               {pcaScatterData && pcaScatterData.length > 0 && (
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
@@ -162,7 +206,18 @@ export default function CorrelationPage() {
             </ChartCard>
 
             {/* State Bubble */}
-            <ChartCard title="State Level Bubble Chart" subtitle="Accident count vs average severity" loading={bubbleLoading} height={360}>
+            <ChartCard 
+              title="State Level Bubble Chart" 
+              subtitle="Accident count vs average severity" 
+              loading={bubbleLoading} 
+              height={360}
+              interpretation={
+                <ul className="list-disc pl-4 marker:text-[#a78bfa]">
+                  <li>Integrates three independent variables (Severity, Volume, Speed) directly correlating regional operational scale and impact logic.</li>
+                  <li>Highlights inverse stabilities: ultra-dense macro states maintain normalized severity mappings unlike volatile, sparse peripheral territories.</li>
+                </ul>
+              }  
+            >
               {bubbleData && bubbleData.length > 0 && (
                 <ResponsiveContainer width="100%" height="100%">
                   <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
@@ -178,7 +233,7 @@ export default function CorrelationPage() {
                       }}
                       labelFormatter={(_, payload) => {
                         const p = payload?.[0]?.payload;
-                        return p ? `State: ${p.State}` : "";
+                        return p ? `State: ${STATE_MAP[p.State] || p.State}` : "";
                       }}
                     />
                     <Scatter name="States" data={bubbleData} animationDuration={1200}>

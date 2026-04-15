@@ -1,7 +1,8 @@
-import { LayoutDashboard, BarChart3, ScatterChart, Lightbulb, MapPin, Settings } from "lucide-react";
+import { LayoutDashboard, BarChart3, ScatterChart, Lightbulb, MapPin, Settings, PieChart } from "lucide-react";
 
 const navItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "metrics", label: "Key Metrics", icon: PieChart },
   { id: "distribution", label: "Distribution", icon: BarChart3 },
   { id: "correlation", label: "Correlation", icon: ScatterChart },
   { id: "geospatial", label: "Geospatial", icon: MapPin },
@@ -15,12 +16,12 @@ interface SidebarProps {
 
 export function Sidebar({ activePage, onNavigate }: SidebarProps) {
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 bg-[#050a12] flex flex-col py-6 px-4 z-50 border-r border-[var(--color-border)]">
+    <aside className="h-screen w-64 fixed left-0 top-0 bg-[var(--color-surface)] flex flex-col py-6 px-4 z-50 border-r border-[var(--color-border)] transition-colors duration-300">
       {/* Logo */}
       <div className="mb-10 px-2">
         <h1 className="text-xl font-black text-[var(--color-accent)] tracking-tighter flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-[var(--color-cyan)] pulse-dot inline-block" />
-          Obsidian Lens
+          Insights Innovators
         </h1>
         <p className="text-[10px] text-[var(--color-text-muted)] font-semibold tracking-[0.2em] uppercase mt-1">
           Data Intelligence

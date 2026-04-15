@@ -21,10 +21,10 @@ export const CHART_COLORS = [
 
 // Shared Recharts theme config for dark mode
 export const AXIS_STYLE = {
-  stroke: "rgba(148,163,184,0.15)",
-  fontSize: 11,
+  stroke: "rgba(148,163,184,0.3)",
+  fontSize: 12,
   fontFamily: "'Inter', sans-serif",
-  fill: "#64748b",
+  tick: { fill: "#f8fafc" },
 };
 
 export const GRID_STYLE = {
@@ -63,3 +63,16 @@ export function useAsyncData<T>(fetcher: () => Promise<T>, deps: unknown[] = [])
 
   return { data, loading, error };
 }
+
+export const STATE_MAP: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
+  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa", KS: "Kansas",
+  KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland", MA: "Massachusetts",
+  MI: "Michigan", MN: "Minnesota", MS: "Mississippi", MO: "Missouri", MT: "Montana",
+  NE: "Nebraska", NV: "Nevada", NH: "New Hampshire", NJ: "New Jersey", NM: "New Mexico",
+  NY: "New York", NC: "North Carolina", ND: "North Dakota", OH: "Ohio", OK: "Oklahoma",
+  OR: "Oregon", PA: "Pennsylvania", RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota",
+  TN: "Tennessee", TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington",
+  WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming", DC: "Dist. of Columbia"
+};

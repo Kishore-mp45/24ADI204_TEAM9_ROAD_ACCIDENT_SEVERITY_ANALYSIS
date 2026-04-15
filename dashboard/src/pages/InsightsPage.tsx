@@ -33,7 +33,18 @@ export default function InsightsPage() {
       <div className="grid grid-cols-12 gap-6">
         {/* Scatter Plot — Geographical Accident Hotspots (Chart #4) */}
         <div className="col-span-12 lg:col-span-6">
-          <ChartCard title="Scatter Plot — Geographical Accident Hotspots" subtitle="Lat/Lng positions of US road accidents" loading={geoLoading} height={400}>
+          <ChartCard 
+            title="Scatter Plot — Geographical Accident Hotspots" 
+            subtitle="Lat/Lng positions of US road accidents" 
+            loading={geoLoading} 
+            height={400}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#34d399]">
+                <li>Identifies high-frequency localized sectors and severe isolated hazard zones mapping out dense commuter channels.</li>
+                <li>Provides geospatial ground-truth validating the direct correlations between infrastructural volume and absolute danger mapping.</li>
+              </ul>
+            }  
+          >
             {geoData && geoData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
                 <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
@@ -58,12 +69,23 @@ export default function InsightsPage() {
 
         {/* Weather Stacked Bar (Chart #13) */}
         <div className="col-span-12 lg:col-span-6">
-          <ChartCard title="Weather Condition vs. Accident Severity" subtitle="100% Stacked Bar Chart — percentage breakdown" loading={weatherLoading} height={400}>
+          <ChartCard 
+            title="Weather Condition vs. Accident Severity" 
+            subtitle="100% Stacked Bar Chart — percentage breakdown" 
+            loading={weatherLoading} 
+            height={400}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#fbbf24]">
+                <li>Debunks the assumption that extreme weather creates universally extreme severity: normalized proportions remain relatively stable across weather types.</li>
+                <li>Demonstrates that localized clear-weather accidents often result in unexpectedly high severity proportions due to higher ambient driving speeds.</li>
+              </ul>
+            }  
+          >
             {weatherData && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={weatherData} barCategoryGap="20%">
                   <CartesianGrid {...GRID_STYLE} />
-                  <XAxis dataKey="weather" {...AXIS_STYLE} tickLine={false} axisLine={false} tick={{ fontSize: 9 }} interval={0} angle={-15} textAnchor="end" height={50} />
+                  <XAxis dataKey="weather" {...AXIS_STYLE} tickLine={false} axisLine={false} tick={{ fill: "#f8fafc", fontSize: 9 }} interval={0} angle={-15} textAnchor="end" height={50} />
                   <YAxis {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
                   <Tooltip {...TOOLTIP_STYLE} formatter={(value: number) => [`${value}%`, ""]} />
                   <Legend wrapperStyle={{ fontSize: 11, color: "#94a3b8" }} />
@@ -79,7 +101,18 @@ export default function InsightsPage() {
 
         {/* Line Plot — Severity Trend Across Wind Speed (Chart #6) */}
         <div className="col-span-12 lg:col-span-6">
-          <ChartCard title="Line Plot — Severity Trend Across Wind Speed" subtitle="Average severity index plotted against wind speed bins" loading={windTrendLoading} height={380}>
+          <ChartCard 
+            title="Line Plot — Severity Trend Across Wind Speed" 
+            subtitle="Average severity index plotted against wind speed bins" 
+            loading={windTrendLoading} 
+            height={380}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#22d3ee]">
+                <li>Traces the subtle progression of accident impact severity as atmospheric turbulence (wind speed mapping) increases.</li>
+                <li>Displays localized statistical variation at extreme edge cases representing sparse, unstable high-wind anomalies.</li>
+              </ul>
+            }  
+          >
             {windTrendData && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={windTrendData} margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
@@ -112,7 +145,18 @@ export default function InsightsPage() {
 
         {/* Wind Speed Distribution */}
         <div className="col-span-12 lg:col-span-6">
-          <ChartCard title="Distribution Plot — Wind Speed Density" subtitle="Frequency distribution of wind speed readings" loading={windLoading} height={380}>
+          <ChartCard 
+            title="Distribution Plot — Wind Speed Density" 
+            subtitle="Frequency distribution of wind speed readings" 
+            loading={windLoading} 
+            height={380}
+            interpretation={
+              <ul className="list-disc pl-4 marker:text-[#6ea8fe]">
+                <li>Proves that the vast majority of incidents occur well within standard, safe wind limits (0–15 mph), exhibiting a severe right-skew.</li>
+                <li>Verifies the necessity of advanced skewness normalization (log scaling) for continuous weather distributions before model processing.</li>
+              </ul>
+            }  
+          >
             {windData && (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={windData}>
