@@ -28,32 +28,45 @@ global_pca_df = None
 
 def load_data():
     global global_df
-    print("Loading 200,000 row sampled dataset...")
-    # Using parent directory since backend is in /backend
-    csv_path = os.path.join(os.path.dirname(__file__), "..", "US_Accidents_March23.csv")
-    
+    print("Downloading dataset from Google Drive...")
+
+    FILE_ID = "1RrTTQeSnImeGpgMYGbUmIiU1C02IIVUt"  # ← paste your file ID here
+    url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
+
     try:
-        df = pd.read_csv(csv_path, nrows=200000)
-    except FileNotFoundError:
-        print(f"Error: {csv_path} not found.")
+        import requests, io
+        session = requests.Session()
+        response = session.get(url, stream=True)
+
+        # Handle Google's virus-scan warning for large files
+        for key, value in response.cookies.items():
+            if key.startswith("download_warning"):
+                url = f"https://drive.google.com/uc?export=download&id={FILE_ID}&confirm={value}"
+                response = session.get(url, stream=True)
+                break
+
+        content = b"".join(response.iter_content(chunk_size=8192))
+        df = pd.read_csv(io.BytesIO(content), nrows=200000)
+
+    except Exception as e:
+        print(f"Error downloading CSV: {e}")
         return None
 
-    # Parsing & Cleaning mirroring the notebook pipeline
+    # rest of your existing cleaning code stays the same...
     df['Start_Time'] = pd.to_datetime(df['Start_Time'], errors='coerce')
     df['Hour'] = df['Start_Time'].dt.hour
     df['DayOfWeek'] = df['Start_Time'].dt.day_name()
     df['Weather_Condition'] = df['Weather_Condition'].fillna('Fair')
     df['Sunrise_Sunset'] = df['Sunrise_Sunset'].fillna('Day')
     df['Severity'] = df['Severity'].astype(int)
-    
-    # Fill numeric NAs
+
     num_cols = ['Distance(mi)', 'Temperature(F)', 'Humidity(%)', 'Pressure(in)', 'Visibility(mi)', 'Wind_Speed(mph)']
     for col in num_cols:
         if col in df.columns:
             df[col] = df[col].fillna(df[col].median())
-            
+
     global_df = df
-    print("Data loaded perfectly.")
+    print("Data loaded successfully.")
     return df
 
 @app.on_event("startup")
