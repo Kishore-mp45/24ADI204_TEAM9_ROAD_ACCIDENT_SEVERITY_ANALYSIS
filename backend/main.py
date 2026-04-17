@@ -1,4 +1,5 @@
 import os
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -49,15 +50,21 @@ def load_data():
     return df
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup
-    load_data()
+async def _background_startup():
+    """Download data and pre-compute PCA in a thread pool so startup is non-blocking."""
     global global_df, global_pca_df
+    loop = asyncio.get_event_loop()
+
+    await loop.run_in_executor(None, load_data)
+
     if global_df is not None:
         print("Pre-computing PCA Matrix...")
-        num_df = global_df.select_dtypes(include=['int64', 'float64']).fillna(0)
-        if 'Severity' in num_df.columns:
+
+        def compute_pca():
+            global global_pca_df
+            num_df = global_df.select_dtypes(include=['int64', 'float64']).fillna(0)
+            if 'Severity' not in num_df.columns:
+                return
             y = num_df['Severity'].astype(str)
             X = num_df.drop('Severity', axis=1)
             scaler = StandardScaler()
@@ -67,6 +74,17 @@ async def lifespan(app: FastAPI):
             pca_df = pd.DataFrame(X_pca, columns=['PC1', 'PC2'])
             pca_df['Severity'] = y.values
             global_pca_df = pca_df
+            print("PCA complete.")
+
+        await loop.run_in_executor(None, compute_pca)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    # Kick off data loading in the background so the server is immediately available.
+    # Render's health check at /health will return 200 right away; data_loaded will
+    # flip to true once the download and PCA computation finish.
+    asyncio.create_task(_background_startup())
     yield
     # Shutdown (nothing to clean up)
 
