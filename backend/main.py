@@ -21,21 +21,12 @@ def load_data():
     print("Downloading dataset from Google Drive...")
 
     FILE_ID = "1RrTTQeSnImeGpgMYGbUmIiU1C02IIVUt"
-    url = f"https://drive.google.com/uc?export=download&id={FILE_ID}"
+    tmp_path = "/tmp/accidents.csv"
 
     try:
-        import requests, io
-        session = requests.Session()
-        response = session.get(url, stream=True)
-
-        for key, value in response.cookies.items():
-            if key.startswith("download_warning"):
-                url = f"https://drive.google.com/uc?export=download&id={FILE_ID}&confirm={value}"
-                response = session.get(url, stream=True)
-                break
-
-        content = b"".join(response.iter_content(chunk_size=8192))
-        df = pd.read_csv(io.BytesIO(content), nrows=200000)
+        import gdown, io
+        gdown.download(id=FILE_ID, output=tmp_path, quiet=False, fuzzy=True)
+        df = pd.read_csv(tmp_path, nrows=200000)
 
     except Exception as e:
         print(f"Error downloading CSV: {e}")

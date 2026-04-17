@@ -1,6 +1,8 @@
 # API Backend Core
 fastapi
 uvicorn[standard]
+gunicorn
+python-multipart
 
 # Data Processing & Math
 pandas
@@ -14,4 +16,7 @@ scikit-learn
 plotly
 matplotlib
 seaborn
+
+# HTTP & Downloads
 requests
+gdown
