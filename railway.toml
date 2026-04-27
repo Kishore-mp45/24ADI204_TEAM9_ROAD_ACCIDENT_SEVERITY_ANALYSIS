@@ -3,7 +3,7 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-startCommand = "python backend/main.py"
+startCommand = "python run.py"
 restartPolicyType = "on_failure"
 restartPolicyMaxRetries = 3
 

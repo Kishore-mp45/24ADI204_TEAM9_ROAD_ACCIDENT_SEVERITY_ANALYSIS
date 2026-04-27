@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy backend source
 COPY backend/ ./backend/
 COPY main.py .
+COPY run.py .
 
 # Copy built React frontend from Stage 1
 COPY --from=frontend-builder /app/dashboard/dist ./dashboard/dist
