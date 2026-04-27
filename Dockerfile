@@ -35,5 +35,5 @@ RUN sed -i 's/\r//' ./start.sh && chmod +x ./start.sh
 # Expose default port
 EXPOSE 8000
 
-# Use start.sh — correctly reads $PORT from Railway at runtime
-CMD ["/app/start.sh"]
+# Python reads PORT from environment directly — no shell expansion needed
+CMD ["python", "-c", "import os, uvicorn; uvicorn.run('backend.main:app', host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))"]
