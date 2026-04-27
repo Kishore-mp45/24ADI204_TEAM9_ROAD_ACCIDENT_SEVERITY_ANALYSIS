@@ -83,7 +83,7 @@ function CalendarHeatmap({ data }: { data: { date: string; count: number }[] }) 
           <div key={year}>
             <div className="flex items-start gap-2">
               {/* Day labels */}
-              <div style={{ width: 28 }} className="flex flex-col gap-0" style={{ paddingTop: 0 }}>
+              <div style={{ width: 28, paddingTop: 0 }} className="flex flex-col gap-0">
                 {dayNames.map((name, di) => (
                   <div key={di} style={{ height: STEP, fontSize: 8, lineHeight: `${STEP}px` }} className="text-right pr-1 text-[var(--color-text-muted)] font-mono">
                     {di % 2 === 1 ? name : ""}
