@@ -972,3 +972,10 @@ if os.path.isdir(react_dist):
     app.mount("/", StaticFiles(directory=react_dist, html=True), name="frontend")
 else:
     app.mount("/", StaticFiles(directory=legacy_frontend, html=True), name="frontend")
+
+# ── Entry point for Railway deployment ──────────────────────────────
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting server on port {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
