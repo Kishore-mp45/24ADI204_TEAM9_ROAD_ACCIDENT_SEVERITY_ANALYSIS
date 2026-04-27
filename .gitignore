@@ -17,3 +17,9 @@ venv/
 dashboard/node_modules/
 dashboard/dist/
 dashboard/.swc/
+
+# Notebook extraction artifacts (non-UTF-8, not needed for deployment)
+notebook_code.py
+notebook_plots.txt
+plots.txt
+*.ipynb
