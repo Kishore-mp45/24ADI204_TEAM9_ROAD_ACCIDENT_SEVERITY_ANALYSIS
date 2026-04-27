@@ -28,8 +28,12 @@ COPY main.py .
 # Copy built React frontend from Stage 1
 COPY --from=frontend-builder /app/dashboard/dist ./dashboard/dist
 
-# Expose port (Railway sets $PORT at runtime)
+# Copy startup script and make executable
+COPY start.sh ./start.sh
+RUN chmod +x ./start.sh
+
+# Expose default port
 EXPOSE 8000
 
-# Start FastAPI — Railway injects $PORT at runtime
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Use start.sh — correctly reads $PORT from Railway at runtime
+CMD ["/app/start.sh"]
