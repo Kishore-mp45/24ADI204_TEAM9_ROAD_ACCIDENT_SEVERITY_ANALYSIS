@@ -28,9 +28,9 @@ COPY main.py .
 # Copy built React frontend from Stage 1
 COPY --from=frontend-builder /app/dashboard/dist ./dashboard/dist
 
-# Copy startup script and make executable
+# Copy startup script, strip Windows CRLF, make executable
 COPY start.sh ./start.sh
-RUN chmod +x ./start.sh
+RUN sed -i 's/\r//' ./start.sh && chmod +x ./start.sh
 
 # Expose default port
 EXPOSE 8000

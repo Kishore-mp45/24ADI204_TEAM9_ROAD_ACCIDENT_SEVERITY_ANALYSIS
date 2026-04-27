@@ -1,0 +1,8 @@
+# Force LF line endings for shell scripts (prevent CRLF on Windows breaking Linux containers)
+*.sh text eol=lf
+
+# Force LF for all text files going to Linux
+Dockerfile text eol=lf
+*.toml text eol=lf
+Procfile text eol=lf
+requirements.txt text eol=lf
