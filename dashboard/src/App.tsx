@@ -4,17 +4,29 @@ import { TopBar } from "@/components/TopBar";
 import OverviewPage from "@/pages/OverviewPage";
 import DistributionPage from "@/pages/DistributionPage";
 import CorrelationPage from "@/pages/CorrelationPage";
-import GeospatialPage from "@/pages/GeospatialPage";
 import InsightsPage from "@/pages/InsightsPage";
 import MetricsPage from "@/pages/MetricsPage";
+import TemporalTrendsPage from "@/pages/TemporalTrendsPage";
+import HierarchyPage from "@/pages/HierarchyPage";
+import MultiVariatePage from "@/pages/MultiVariatePage";
+import DensityPage from "@/pages/DensityPage";
+import StatisticalPage from "@/pages/StatisticalPage";
+import ComparativePage from "@/pages/ComparativePage";
+import PatternPage from "@/pages/PatternPage";
 
 const pages: Record<string, React.ComponentType> = {
   overview: OverviewPage,
   metrics: MetricsPage,
   distribution: DistributionPage,
   correlation: CorrelationPage,
-  geospatial: GeospatialPage,
   insights: InsightsPage,
+  temporal: TemporalTrendsPage,
+  hierarchy: HierarchyPage,
+  multivariate: MultiVariatePage,
+  density: DensityPage,
+  statistical: StatisticalPage,
+  comparative: ComparativePage,
+  patterns: PatternPage,
 };
 
 export default function App() {

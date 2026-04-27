@@ -1,18 +1,16 @@
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  ScatterChart, Scatter, ZAxis, Cell,
-  AreaChart, Area, Line,
+  ComposedChart, AreaChart, Area, Line, Cell,
 } from "recharts";
 import { ChartCard } from "@/components/ui/ChartCard";
-import { fetchCorrHeat, fetchMissingBar, fetchPcaLine, fetchPcaScatter, fetchStateBubble } from "@/lib/api";
-import { SEVERITY_COLORS, CHART_COLORS, AXIS_STYLE, GRID_STYLE, STATE_MAP, useAsyncData } from "@/lib/charts";
+import { fetchCorrHeat, fetchMissingBar, fetchPcaLine } from "@/lib/api";
+import { CHART_COLORS, AXIS_STYLE, GRID_STYLE, useAsyncData } from "@/lib/charts";
 
 const TOOLTIP_STYLE = {
   contentStyle: { background: "rgba(11,17,32,0.92)", border: "1px solid rgba(148,163,184,0.1)", borderRadius: "0.75rem" },
   labelStyle: { color: "#f1f5f9", fontWeight: 600 as const },
 };
 
-const SEV_COLOR_MAP: Record<string, string> = { "1": "#34d399", "2": "#6ea8fe", "3": "#fbbf24", "4": "#fb7185" };
 
 function CorrelationHeatmap({ data }: { data: { columns: string[]; cells: { x: string; y: string; value: number }[] } }) {
   const { columns, cells } = data;
@@ -74,8 +72,6 @@ export default function CorrelationPage() {
   const { data: corrData, loading: corrLoading } = useAsyncData(fetchCorrHeat);
   const { data: missingData, loading: missingLoading } = useAsyncData(fetchMissingBar);
   const { data: pcaLineData, loading: pcaLineLoading } = useAsyncData(fetchPcaLine);
-  const { data: pcaScatterData, loading: pcaScatterLoading } = useAsyncData(fetchPcaScatter);
-  const { data: bubbleData, loading: bubbleLoading } = useAsyncData(fetchStateBubble);
 
   return (
     <div>
@@ -151,7 +147,7 @@ export default function CorrelationPage() {
           >
             {pcaLineData && (
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={pcaLineData}>
+                <ComposedChart data={pcaLineData}>
                   <defs>
                     <linearGradient id="pcaGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#a78bfa" stopOpacity={0.35} />
@@ -164,88 +160,10 @@ export default function CorrelationPage() {
                   <Tooltip {...TOOLTIP_STYLE} formatter={(value: number, name: string) => [`${value}%`, name === "cumulative" ? "Cumulative" : "Variance"]} />
                   <Area type="monotone" dataKey="cumulative" stroke="#a78bfa" strokeWidth={2} fill="url(#pcaGrad)" dot={{ r: 3, fill: "#a78bfa" }} animationDuration={1500} />
                   <Line type="monotone" dataKey="variance" stroke="#22d3ee" strokeWidth={1.5} strokeDasharray="5 3" dot={{ r: 2, fill: "#22d3ee" }} animationDuration={1500} />
-                </AreaChart>
+                </ComposedChart>
               </ResponsiveContainer>
             )}
           </ChartCard>
-        </div>
-
-        {/* Scatter Charts */}
-        <div className="col-span-12 mt-4">
-          <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-6">Scatter Analysis & Relationships</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* PCA Scatter — single Scatter with Cell coloring */}
-            <ChartCard 
-              title="PCA 2D Cluster Extraction" 
-              subtitle="Principal components colored by severity" 
-              loading={pcaScatterLoading} 
-              height={360}
-              interpretation={
-                <ul className="list-disc pl-4 marker:text-[#6ea8fe]">
-                  <li>Validates machine learning readiness by plotting synthesized feature combinations mathematically mapped onto a 2D constraint plane.</li>
-                  <li>Observes critical isolating clustering behaviors dictating the predictability bounds of future classifier inference models.</li>
-                </ul>
-              }  
-            >
-              {pcaScatterData && pcaScatterData.length > 0 && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
-                    <CartesianGrid {...GRID_STYLE} />
-                    <XAxis dataKey="PC1" type="number" name="PC1" {...AXIS_STYLE} tickLine={false} axisLine={false} />
-                    <YAxis dataKey="PC2" type="number" name="PC2" {...AXIS_STYLE} tickLine={false} axisLine={false} />
-                    <ZAxis range={[12, 12]} />
-                    <Tooltip {...TOOLTIP_STYLE} formatter={(value: number) => value.toFixed(3)} />
-                    <Scatter name="PCA Clusters" data={pcaScatterData} animationDuration={800}>
-                      {pcaScatterData.map((entry: { Severity: string }, i: number) => (
-                        <Cell key={i} fill={SEV_COLOR_MAP[entry.Severity] || "#6ea8fe"} opacity={0.45} />
-                      ))}
-                    </Scatter>
-                  </ScatterChart>
-                </ResponsiveContainer>
-              )}
-            </ChartCard>
-
-            {/* State Bubble */}
-            <ChartCard 
-              title="State Level Bubble Chart" 
-              subtitle="Accident count vs average severity" 
-              loading={bubbleLoading} 
-              height={360}
-              interpretation={
-                <ul className="list-disc pl-4 marker:text-[#a78bfa]">
-                  <li>Integrates three independent variables (Severity, Volume, Speed) directly correlating regional operational scale and impact logic.</li>
-                  <li>Highlights inverse stabilities: ultra-dense macro states maintain normalized severity mappings unlike volatile, sparse peripheral territories.</li>
-                </ul>
-              }  
-            >
-              {bubbleData && bubbleData.length > 0 && (
-                <ResponsiveContainer width="100%" height="100%">
-                  <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
-                    <CartesianGrid {...GRID_STYLE} />
-                    <XAxis dataKey="accidents" type="number" name="Accidents" {...AXIS_STYLE} tickLine={false} axisLine={false}
-                      tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-                    <YAxis dataKey="avg_severity" type="number" name="Avg Severity" domain={[1.5, 4]} {...AXIS_STYLE} tickLine={false} axisLine={false} />
-                    <ZAxis dataKey="accidents" range={[40, 500]} />
-                    <Tooltip {...TOOLTIP_STYLE}
-                      formatter={(value: number, name: string) => {
-                        if (name === "Accidents") return [value.toLocaleString(), name];
-                        return [value.toFixed(2), name];
-                      }}
-                      labelFormatter={(_, payload) => {
-                        const p = payload?.[0]?.payload;
-                        return p ? `State: ${STATE_MAP[p.State] || p.State}` : "";
-                      }}
-                    />
-                    <Scatter name="States" data={bubbleData} animationDuration={1200}>
-                      {bubbleData.map((_: unknown, i: number) => (
-                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} opacity={0.75} />
-                      ))}
-                    </Scatter>
-                  </ScatterChart>
-                </ResponsiveContainer>
-              )}
-            </ChartCard>
-          </div>
         </div>
       </div>
     </div>

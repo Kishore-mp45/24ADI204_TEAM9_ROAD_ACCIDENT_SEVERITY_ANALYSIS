@@ -2,10 +2,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   AreaChart, Area,
   LineChart, Line,
-  ScatterChart, Scatter, ZAxis, Cell,
 } from "recharts";
 import { ChartCard } from "@/components/ui/ChartCard";
-import { fetchGeo2dHist, fetchWeatherStacked, fetchWindHist, fetchWindSeverityTrend } from "@/lib/api";
+import { fetchWeatherStacked, fetchWindHist, fetchWindSeverityTrend } from "@/lib/api";
 import { SEVERITY_COLORS, AXIS_STYLE, GRID_STYLE, useAsyncData } from "@/lib/charts";
 
 const TOOLTIP_STYLE = {
@@ -16,7 +15,6 @@ const TOOLTIP_STYLE = {
 const GEO_COLOR_MAP: Record<number, string> = { 1: "#34d399", 2: "#6ea8fe", 3: "#fbbf24", 4: "#fb7185" };
 
 export default function InsightsPage() {
-  const { data: geoData, loading: geoLoading } = useAsyncData(fetchGeo2dHist);
   const { data: weatherData, loading: weatherLoading } = useAsyncData(fetchWeatherStacked);
   const { data: windData, loading: windLoading } = useAsyncData(fetchWindHist);
   const { data: windTrendData, loading: windTrendLoading } = useAsyncData(fetchWindSeverityTrend);
@@ -31,44 +29,8 @@ export default function InsightsPage() {
       </div>
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Scatter Plot — Geographical Accident Hotspots (Chart #4) */}
-        <div className="col-span-12 lg:col-span-6">
-          <ChartCard 
-            title="Scatter Plot — Geographical Accident Hotspots" 
-            subtitle="Lat/Lng positions of US road accidents" 
-            loading={geoLoading} 
-            height={400}
-            interpretation={
-              <ul className="list-disc pl-4 marker:text-[#34d399]">
-                <li>Identifies high-frequency localized sectors and severe isolated hazard zones mapping out dense commuter channels.</li>
-                <li>Provides geospatial ground-truth validating the direct correlations between infrastructural volume and absolute danger mapping.</li>
-              </ul>
-            }  
-          >
-            {geoData && geoData.length > 0 && (
-              <ResponsiveContainer width="100%" height="100%">
-                <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
-                  <CartesianGrid {...GRID_STYLE} />
-                  <XAxis dataKey="lng" type="number" domain={[-130, -65]} name="Longitude" {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}°`} />
-                  <YAxis dataKey="lat" type="number" domain={[24, 50]} name="Latitude" {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}°`} />
-                  <ZAxis range={[6, 6]} />
-                  <Tooltip {...TOOLTIP_STYLE} formatter={(value: number, name: string) => {
-                    if (name === "Severity") return [value, "Severity"];
-                    return [`${value.toFixed(2)}°`, name];
-                  }} />
-                  <Scatter name="Accidents" data={geoData} animationDuration={1500}>
-                    {geoData.map((d: { severity: number }, i: number) => (
-                      <Cell key={i} fill={GEO_COLOR_MAP[d.severity] || "#6ea8fe"} opacity={0.3} />
-                    ))}
-                  </Scatter>
-                </ScatterChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-        </div>
-
         {/* Weather Stacked Bar (Chart #13) */}
-        <div className="col-span-12 lg:col-span-6">
+        <div className="col-span-12">
           <ChartCard 
             title="Weather Condition vs. Accident Severity" 
             subtitle="100% Stacked Bar Chart — percentage breakdown" 

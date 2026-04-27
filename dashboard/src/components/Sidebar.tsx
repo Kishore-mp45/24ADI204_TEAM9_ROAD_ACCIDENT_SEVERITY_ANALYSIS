@@ -1,12 +1,18 @@
-import { LayoutDashboard, BarChart3, ScatterChart, Lightbulb, MapPin, Settings, PieChart } from "lucide-react";
+import { LayoutDashboard, BarChart3, ScatterChart, Lightbulb, MapPin, Settings, PieChart, TrendingUp, Network, Layers3, Hexagon, Activity, Scale, Compass } from "lucide-react";
 
 const navItems = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "metrics", label: "Key Metrics", icon: PieChart },
   { id: "distribution", label: "Distribution", icon: BarChart3 },
   { id: "correlation", label: "Correlation", icon: ScatterChart },
-  { id: "geospatial", label: "Geospatial", icon: MapPin },
   { id: "insights", label: "Insights & Advanced", icon: Lightbulb },
+  { id: "temporal", label: "Temporal Trends", icon: TrendingUp },
+  { id: "hierarchy", label: "Hierarchy & Categories", icon: Network },
+  { id: "multivariate", label: "Multi-Variable", icon: Layers3 },
+  { id: "density", label: "Density & Patterns", icon: Hexagon },
+  { id: "statistical", label: "Statistical Analysis", icon: Activity },
+  { id: "comparative", label: "Comparative Analysis", icon: Scale },
+  { id: "patterns", label: "Pattern Discovery", icon: Compass },
 ];
 
 interface SidebarProps {

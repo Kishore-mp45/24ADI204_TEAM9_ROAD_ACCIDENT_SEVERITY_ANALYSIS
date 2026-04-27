@@ -29,13 +29,14 @@ global_pca_df = None
 def load_data():
     global global_df
     print("Loading 200,000 row sampled dataset...")
-    # Using parent directory since backend is in /backend
-    csv_path = os.path.join(os.path.dirname(__file__), "..", "US_Accidents_March23.csv")
-    
+    # Support Railway volume via CSV_PATH env variable, fallback to local path
+    default_path = os.path.join(os.path.dirname(__file__), "..", "US_Accidents_March23.csv")
+    csv_path = os.environ.get("CSV_PATH", default_path)
+
     try:
         df = pd.read_csv(csv_path, nrows=200000)
     except FileNotFoundError:
-        print(f"Error: {csv_path} not found.")
+        print(f"Error: Dataset not found at {csv_path}. Set CSV_PATH env variable to the correct location.")
         return None
 
     # Parsing & Cleaning mirroring the notebook pipeline
@@ -594,6 +595,374 @@ def v2_geo_severity():
     return JSONResponse(sample.to_dict(orient='records'))
 
 
+
+# =====================================================================
+# TEMPORAL TRENDS ENDPOINTS
+# =====================================================================
+
+@app.get("/api/v2/trend-monthly")
+def v2_trend_monthly():
+    """Year-over-Year monthly accident counts for Area Chart."""
+    if global_df is None: return JSONResponse([])
+    df = global_df.copy()
+    df['Year'] = df['Start_Time'].dt.year
+    df['Month'] = df['Start_Time'].dt.month
+    grouped = df.groupby(['Year', 'Month']).size().reset_index(name='count')
+    grouped['period'] = grouped['Year'].astype(str) + '-' + grouped['Month'].astype(str).str.zfill(2)
+    grouped = grouped.sort_values('period')
+    return JSONResponse(grouped[['period', 'count', 'Year', 'Month']].to_dict(orient='records'))
+
+
+@app.get("/api/v2/trend-seasonality")
+def v2_trend_seasonality():
+    """Monthly accident frequency aggregated across all years — Radar chart."""
+    if global_df is None: return JSONResponse([])
+    df = global_df.copy()
+    month_names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+    df['Month'] = df['Start_Time'].dt.month
+    grouped = df.groupby('Month').size().reset_index(name='count')
+    grouped['month_name'] = grouped['Month'].apply(lambda m: month_names[m - 1])
+    return JSONResponse(grouped[['month_name', 'count']].to_dict(orient='records'))
+
+
+@app.get("/api/v2/trend-severity-shift")
+def v2_trend_severity_shift():
+    """Proportional severity distribution per year — Stacked Area chart."""
+    if global_df is None: return JSONResponse([])
+    df = global_df.copy()
+    df['Year'] = df['Start_Time'].dt.year
+    grouped = df.groupby(['Year', 'Severity']).size().reset_index(name='count')
+    pivot = grouped.pivot_table(index='Year', columns='Severity', values='count', fill_value=0)
+    pivot = pivot.div(pivot.sum(axis=1), axis=0) * 100  # Convert to percentages
+    pivot.columns = [f'Severity {int(c)}' for c in pivot.columns]
+    pivot = pivot.reset_index()
+    return JSONResponse(pivot.to_dict(orient='records'))
+
+
+# =====================================================================
+# HIERARCHY & CATEGORICAL ENDPOINTS
+# =====================================================================
+
+@app.get("/api/v2/treemap")
+def v2_treemap():
+    """State → Severity breakdown for Treemap."""
+    if global_df is None: return JSONResponse([])
+    top_states = global_df['State'].value_counts().head(12).index.tolist()
+    df_f = global_df[global_df['State'].isin(top_states)]
+    grouped = df_f.groupby(['State', 'Severity']).size().reset_index(name='value')
+    result = []
+    for _, row in grouped.iterrows():
+        result.append({
+            'name': f"Sev {int(row['Severity'])}",
+            'state': str(row['State']),
+            'severity': int(row['Severity']),
+            'value': int(row['value'])
+        })
+    return JSONResponse(result)
+
+
+@app.get("/api/v2/top-cities")
+def v2_top_cities():
+    """Top 15 cities by accident count for Lollipop chart."""
+    if global_df is None: return JSONResponse([])
+    city_counts = global_df['City'].value_counts().head(15).reset_index()
+    city_counts.columns = ['city', 'count']
+    return JSONResponse(city_counts.to_dict(orient='records'))
+
+
+@app.get("/api/v2/mosaic-weather")
+def v2_mosaic_weather():
+    """Weather Condition vs Severity proportional matrix."""
+    if global_df is None: return JSONResponse([])
+    top_weather = global_df['Weather_Condition'].value_counts().head(6).index.tolist()
+    df_f = global_df[global_df['Weather_Condition'].isin(top_weather)]
+    grouped = df_f.groupby(['Weather_Condition', 'Severity']).size().reset_index(name='count')
+    pivot = grouped.pivot_table(index='Weather_Condition', columns='Severity', values='count', fill_value=0)
+    pivot.columns = [f'sev{int(c)}' for c in pivot.columns]
+    pivot['total'] = pivot.sum(axis=1)
+    pivot = pivot.reset_index()
+    pivot.rename(columns={'Weather_Condition': 'weather'}, inplace=True)
+    return JSONResponse(pivot.to_dict(orient='records'))
+
+
+@app.get("/api/v2/sunburst")
+def v2_sunburst():
+    """Weather → Day/Night → Severity hierarchy for multi-ring chart."""
+    if global_df is None: return JSONResponse([])
+    top_weather = global_df['Weather_Condition'].value_counts().head(5).index.tolist()
+    df_f = global_df[global_df['Weather_Condition'].isin(top_weather)]
+    grouped = df_f.groupby(['Weather_Condition', 'Sunrise_Sunset', 'Severity']).size().reset_index(name='count')
+    result = []
+    for _, row in grouped.iterrows():
+        result.append({
+            'weather': str(row['Weather_Condition']),
+            'period': str(row['Sunrise_Sunset']),
+            'severity': int(row['Severity']),
+            'count': int(row['count'])
+        })
+    return JSONResponse(result)
+
+
+# =====================================================================
+# MULTI-VARIABLE ENDPOINTS
+# =====================================================================
+
+@app.get("/api/v2/scatter-3d")
+def v2_scatter_3d():
+    """Temperature x Visibility x Wind Speed x Severity (3D simulation)."""
+    if global_df is None: return JSONResponse([])
+    cols = ['Temperature(F)', 'Visibility(mi)', 'Wind_Speed(mph)', 'Severity']
+    df_clean = global_df[cols].dropna()
+    df_clean = df_clean[
+        (df_clean['Temperature(F)'].between(-20, 120)) &
+        (df_clean['Visibility(mi)'].between(0, 15)) &
+        (df_clean['Wind_Speed(mph)'].between(0, 60))
+    ]
+    sample = df_clean.sample(n=min(2000, len(df_clean)), random_state=42)
+    sample.columns = ['temperature', 'visibility', 'windSpeed', 'severity']
+    return JSONResponse(sample.round(2).to_dict(orient='records'))
+
+
+@app.get("/api/v2/bubble-chart")
+def v2_bubble_chart():
+    """Visibility x Wind Speed x Count x Severity aggregated bubbles."""
+    if global_df is None: return JSONResponse([])
+    df = global_df[['Visibility(mi)', 'Wind_Speed(mph)', 'Severity']].dropna()
+    df = df[(df['Visibility(mi)'] <= 15) & (df['Wind_Speed(mph)'] <= 50)]
+    df = df.copy()
+    df['vis_bin'] = (df['Visibility(mi)'] / 2).round() * 2
+    df['wind_bin'] = (df['Wind_Speed(mph)'] / 5).round() * 5
+    grouped = df.groupby(['vis_bin', 'wind_bin', 'Severity']).size().reset_index(name='count')
+    result = []
+    for _, row in grouped.iterrows():
+        result.append({
+            'visibility': float(row['vis_bin']),
+            'windSpeed': float(row['wind_bin']),
+            'count': int(row['count']),
+            'severity': int(row['Severity'])
+        })
+    return JSONResponse(result)
+
+
+@app.get("/api/v2/ridgeline")
+def v2_ridgeline():
+    """Wind Speed distribution per Severity for ridgeline plot."""
+    if global_df is None: return JSONResponse({})
+    df = global_df[['Wind_Speed(mph)', 'Severity']].dropna()
+    df = df[df['Wind_Speed(mph)'] <= 60]
+    bins = list(range(0, 62, 3))
+    result = {}
+    for sev in [1, 2, 3, 4]:
+        sev_data = df[df['Severity'] == sev]['Wind_Speed(mph)']
+        counts, edges = np.histogram(sev_data, bins=bins)
+        max_c = float(max(counts)) if max(counts) > 0 else 1.0
+        result[f'sev{sev}'] = [
+            {'wind': float(edges[i]), 'count': int(counts[i]), 'normalized': round(float(counts[i]) / max_c, 4)}
+            for i in range(len(counts))
+        ]
+    return JSONResponse(result)
+
+
+# =====================================================================
+# DENSITY & PATTERNS ENDPOINTS
+# =====================================================================
+
+@app.get("/api/v2/calendar-heatmap")
+def v2_calendar_heatmap():
+    """Daily accident counts across dataset span."""
+    if global_df is None: return JSONResponse([])
+    df = global_df.copy()
+    df['Date'] = df['Start_Time'].dt.date
+    daily = df.groupby('Date').size().reset_index(name='count')
+    daily['date'] = daily['Date'].astype(str)
+    daily = daily.sort_values('date')
+    return JSONResponse(daily[['date', 'count']].to_dict(orient='records'))
+
+
+@app.get("/api/v2/hexbin")
+def v2_hexbin():
+    """Lat/Lng binned into grid cells for hexbin density map."""
+    if global_df is None: return JSONResponse([])
+    geo = global_df[['Start_Lat', 'Start_Lng']].dropna()
+    geo = geo[(geo['Start_Lat'].between(24, 50)) & (geo['Start_Lng'].between(-130, -65))]
+    lat_step = 1.2
+    lng_step = 1.8
+    geo = geo.copy()
+    geo['lat_bin'] = (geo['Start_Lat'] / lat_step).round() * lat_step
+    geo['lng_bin'] = (geo['Start_Lng'] / lng_step).round() * lng_step
+    grouped = geo.groupby(['lat_bin', 'lng_bin']).size().reset_index(name='count')
+    grouped = grouped[grouped['count'] > 5]
+    return JSONResponse([{
+        'lat': round(float(r['lat_bin']), 2),
+        'lng': round(float(r['lng_bin']), 2),
+        'count': int(r['count'])
+    } for _, r in grouped.iterrows()])
+
+
+@app.get("/api/v2/trend-severity-absolute")
+def v2_trend_severity_absolute():
+    """Absolute severity counts per year for Stacked Area chart."""
+    if global_df is None: return JSONResponse([])
+    df = global_df.copy()
+    df['Year'] = df['Start_Time'].dt.year
+    grouped = df.groupby(['Year', 'Severity']).size().reset_index(name='count')
+    pivot = grouped.pivot_table(index='Year', columns='Severity', values='count', fill_value=0)
+    pivot.columns = [f'Severity {int(c)}' for c in pivot.columns]
+    pivot = pivot.reset_index()
+    return JSONResponse(pivot.to_dict(orient='records'))
+
+
+
+# =====================================================================
+# STATISTICAL ANALYSIS ENDPOINTS
+# =====================================================================
+
+@app.get("/api/v2/facet-visibility")
+def v2_facet_visibility():
+    if global_df is None: return JSONResponse({})
+    df = global_df[['Visibility(mi)', 'Severity']].dropna()
+    df = df[df['Visibility(mi)'] <= 15]
+    bins = [0, 1, 2, 3, 4, 5, 6, 8, 10, 15]
+    labels = ['0-1', '1-2', '2-3', '3-4', '4-5', '5-6', '6-8', '8-10', '10-15']
+    result = {}
+    for sev in [1, 2, 3, 4]:
+        sev_df = df[df['Severity'] == sev]
+        counts, _ = np.histogram(sev_df['Visibility(mi)'], bins=bins)
+        result[f'sev{sev}'] = [{'bin': labels[i], 'count': int(counts[i])} for i in range(len(labels))]
+    return JSONResponse(result)
+
+
+@app.get("/api/v2/ecdf")
+def v2_ecdf():
+    if global_df is None: return JSONResponse({})
+    df = global_df[['Visibility(mi)', 'Wind_Speed(mph)']].dropna()
+    df = df[(df['Visibility(mi)'] <= 15) & (df['Wind_Speed(mph)'] <= 60)]
+    vis_sorted = sorted(df['Visibility(mi)'].values)
+    n = len(vis_sorted)
+    step = max(1, n // 200)
+    vis_ecdf = [{'value': round(float(v), 2), 'cumulative': round((i + 1) / n * 100, 2)} for i, v in enumerate(vis_sorted[::step])]
+    wind_sorted = sorted(df['Wind_Speed(mph)'].values)
+    n2 = len(wind_sorted)
+    step2 = max(1, n2 // 200)
+    wind_ecdf = [{'value': round(float(v), 2), 'cumulative': round((i + 1) / n2 * 100, 2)} for i, v in enumerate(wind_sorted[::step2])]
+    return JSONResponse({'visibility': vis_ecdf, 'wind': wind_ecdf})
+
+
+@app.get("/api/v2/confidence-wind")
+def v2_confidence_wind():
+    if global_df is None: return JSONResponse([])
+    df = global_df[['Wind_Speed(mph)', 'Severity']].dropna()
+    df = df[df['Wind_Speed(mph)'] <= 50].copy()
+    df['wind_bin'] = (df['Wind_Speed(mph)'] / 5).round() * 5
+    g = df.groupby('wind_bin')['Severity'].agg(['mean', 'std', 'count']).reset_index()
+    g.columns = ['windBin', 'avgSeverity', 'std', 'count']
+    g['std'] = g['std'].fillna(0)
+    g['ci'] = 1.96 * g['std'] / np.sqrt(g['count'].clip(1))
+    g['upper'] = (g['avgSeverity'] + g['ci']).round(3)
+    g['lower'] = (g['avgSeverity'] - g['ci']).round(3)
+    g['avgSeverity'] = g['avgSeverity'].round(3)
+    return JSONResponse(g[['windBin', 'avgSeverity', 'upper', 'lower']].to_dict(orient='records'))
+
+
+@app.get("/api/v2/rolling-trend")
+def v2_rolling_trend():
+    if global_df is None: return JSONResponse([])
+    df = global_df.copy()
+    df['Date'] = df['Start_Time'].dt.date
+    daily = df.groupby('Date').size().reset_index(name='count')
+    daily['date'] = daily['Date'].astype(str)
+    daily = daily.sort_values('date').reset_index(drop=True)
+    daily['roll7'] = daily['count'].rolling(7, min_periods=1).mean().round(1)
+    daily['roll30'] = daily['count'].rolling(30, min_periods=1).mean().round(1)
+    step = max(1, len(daily) // 300)
+    return JSONResponse(daily[::step][['date', 'count', 'roll7', 'roll30']].to_dict(orient='records'))
+
+
+# =====================================================================
+# COMPARATIVE ANALYSIS ENDPOINTS
+# =====================================================================
+
+@app.get("/api/v2/slope-day-night")
+def v2_slope_day_night():
+    if global_df is None: return JSONResponse([])
+    top_weather = global_df['Weather_Condition'].value_counts().head(8).index.tolist()
+    df_f = global_df[global_df['Weather_Condition'].isin(top_weather)]
+    g = df_f.groupby(['Weather_Condition', 'Sunrise_Sunset'])['Severity'].mean().reset_index()
+    pivot = g.pivot_table(index='Weather_Condition', columns='Sunrise_Sunset', values='Severity').reset_index()
+    pivot.columns.name = None
+    pivot.rename(columns={'Weather_Condition': 'weather'}, inplace=True)
+    return JSONResponse(pivot.round(3).to_dict(orient='records'))
+
+
+@app.get("/api/v2/dual-axis-monthly")
+def v2_dual_axis_monthly():
+    if global_df is None: return JSONResponse([])
+    df = global_df.copy()
+    df['Year'] = df['Start_Time'].dt.year
+    df['Month'] = df['Start_Time'].dt.month
+    g = df.groupby(['Year', 'Month']).agg(count=('Severity', 'size'), avgSeverity=('Severity', 'mean')).reset_index()
+    g['period'] = g['Year'].astype(str) + '-' + g['Month'].astype(str).str.zfill(2)
+    g = g.sort_values('period')
+    g['avgSeverity'] = g['avgSeverity'].round(3)
+    return JSONResponse(g[['period', 'count', 'avgSeverity']].to_dict(orient='records'))
+
+
+# =====================================================================
+# PATTERN DISCOVERY ENDPOINTS
+# =====================================================================
+
+@app.get("/api/v2/contour-density")
+def v2_contour_density():
+    if global_df is None: return JSONResponse([])
+    df = global_df[['Temperature(F)', 'Humidity(%)']].dropna()
+    df = df[(df['Temperature(F)'].between(-10, 110)) & (df['Humidity(%)'].between(0, 100))]
+    temp_bins = np.arange(-10, 111, 10)
+    hum_bins = np.arange(0, 101, 10)
+    temp_centers = [(temp_bins[i] + temp_bins[i+1]) / 2 for i in range(len(temp_bins)-1)]
+    hum_centers = [(hum_bins[i] + hum_bins[i+1]) / 2 for i in range(len(hum_bins)-1)]
+    df_c = df.copy()
+    df_c['temp_bin'] = pd.cut(df['Temperature(F)'], bins=temp_bins, labels=temp_centers)
+    df_c['hum_bin'] = pd.cut(df['Humidity(%)'], bins=hum_bins, labels=hum_centers)
+    g = df_c.groupby(['temp_bin', 'hum_bin']).size().reset_index(name='count')
+    g = g.dropna()
+    return JSONResponse([{'temperature': float(r['temp_bin']), 'humidity': float(r['hum_bin']), 'count': int(r['count'])} for _, r in g.iterrows()])
+
+
+@app.get("/api/v2/scatter-matrix")
+def v2_scatter_matrix():
+    if global_df is None: return JSONResponse([])
+    cols = ['Temperature(F)', 'Humidity(%)', 'Visibility(mi)', 'Wind_Speed(mph)', 'Severity']
+    df_clean = global_df[cols].dropna()
+    df_clean = df_clean[(df_clean['Temperature(F)'].between(-20, 120)) & (df_clean['Humidity(%)'].between(0, 100)) & (df_clean['Visibility(mi)'].between(0, 15)) & (df_clean['Wind_Speed(mph)'].between(0, 60))]
+    sample = df_clean.sample(n=min(600, len(df_clean)), random_state=42)
+    sample.columns = ['temperature', 'humidity', 'visibility', 'windSpeed', 'severity']
+    return JSONResponse(sample.round(2).to_dict(orient='records'))
+
+
+@app.get("/api/v2/polar-hour")
+def v2_polar_hour():
+    if global_df is None: return JSONResponse([])
+    hourly = global_df.groupby('Hour').size().reset_index(name='count')
+    hourly.columns = ['hour', 'count']
+    return JSONResponse(hourly.to_dict(orient='records'))
+
+
+@app.get("/api/v2/grouped-boxplot")
+def v2_grouped_boxplot():
+    if global_df is None: return JSONResponse([])
+    df = global_df[['Visibility(mi)', 'Severity', 'Sunrise_Sunset']].dropna()
+    df = df[df['Visibility(mi)'] <= 15]
+    result = []
+    for sev in [1, 2, 3, 4]:
+        for period in ['Day', 'Night']:
+            vals = df[(df['Severity'] == sev) & (df['Sunrise_Sunset'] == period)]['Visibility(mi)']
+            if len(vals) > 0:
+                q1, q2, q3 = float(np.percentile(vals, 25)), float(np.percentile(vals, 50)), float(np.percentile(vals, 75))
+                iqr = q3 - q1
+                result.append({'severity': sev, 'period': period, 'q1': round(q1, 2), 'q2': round(q2, 2), 'q3': round(q3, 2), 'whiskerLow': round(float(max(vals.min(), q1 - 1.5 * iqr)), 2), 'whiskerHigh': round(float(min(vals.max(), q3 + 1.5 * iqr)), 2)})
+    return JSONResponse(result)
+
+
 # Expose the frontend natively if navigated directly
 # Point to React build output when available, fall back to old frontend
 react_dist = os.path.join(os.path.dirname(__file__), "..", "dashboard", "dist")
@@ -603,4 +972,3 @@ if os.path.isdir(react_dist):
     app.mount("/", StaticFiles(directory=react_dist, html=True), name="frontend")
 else:
     app.mount("/", StaticFiles(directory=legacy_frontend, html=True), name="frontend")
-
