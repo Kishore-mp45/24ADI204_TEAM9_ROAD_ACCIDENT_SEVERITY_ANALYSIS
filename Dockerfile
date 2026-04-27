@@ -31,5 +31,5 @@ COPY --from=frontend-builder /app/dashboard/dist ./dashboard/dist
 # Expose port (Railway sets $PORT at runtime)
 EXPOSE 8000
 
-# Start FastAPI — reads $PORT from Railway environment
-CMD uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}
+# Start FastAPI — Railway injects $PORT at runtime
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
