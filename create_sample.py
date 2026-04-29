@@ -11,7 +11,14 @@ print("(This may take 1-2 minutes for the 3GB file)")
 
 # Collect rows by severity class
 buckets = {1: [], 2: [], 3: [], 4: []}
-TARGET_PER_CLASS = 10000
+
+# Custom proportions over 40,000 rows:
+#   Severity 1: 22% = 8,800
+#   Severity 2: 30% = 12,000
+#   Severity 3: 20% = 8,000
+#   Severity 4: 28% = 11,200
+TARGET = {1: 8800, 2: 12000, 3: 8000, 4: 11200}
+
 chunk_size = 200_000
 total_scanned = 0
 
@@ -19,17 +26,16 @@ for chunk in pd.read_csv("US_Accidents_March23.csv", chunksize=chunk_size):
     total_scanned += len(chunk)
 
     for sev in [1, 2, 3, 4]:
-        needed = TARGET_PER_CLASS - len(buckets[sev])
+        needed = TARGET[sev] - sum(len(b) for b in buckets[sev])
         if needed > 0:
             rows = chunk[chunk["Severity"] == sev]
             buckets[sev].append(rows.iloc[:needed])
 
-    filled = sum(1 for v in buckets.values() if len(pd.concat(v) if v else pd.DataFrame()) >= TARGET_PER_CLASS)
+    filled = sum(1 for sev in [1,2,3,4] if sum(len(b) for b in buckets[sev]) >= TARGET[sev])
     print(f"  Scanned {total_scanned:,} rows | Classes at target: {filled}/4", end="\r")
 
     # Stop early once we have enough of all classes
-    counts = {s: sum(len(b) for b in buckets[s]) for s in buckets}
-    if all(counts[s] >= TARGET_PER_CLASS for s in [1, 2, 3, 4]):
+    if all(sum(len(b) for b in buckets[sev]) >= TARGET[sev] for sev in [1, 2, 3, 4]):
         break
 
 print(f"\nDone scanning {total_scanned:,} rows.")
@@ -39,10 +45,11 @@ parts = []
 for sev in [1, 2, 3, 4]:
     if buckets[sev]:
         df_sev = pd.concat(buckets[sev], ignore_index=True)
-        n = min(TARGET_PER_CLASS, len(df_sev))
+        n = min(TARGET[sev], len(df_sev))
         sampled = df_sev.sample(n=n, random_state=42)
         parts.append(sampled)
-        print(f"  Severity {sev}: {len(df_sev):,} collected -> {n:,} sampled")
+        pct = round(n / 40000 * 100, 1)
+        print(f"  Severity {sev}: {len(df_sev):,} collected -> {n:,} sampled ({pct}%)")
     else:
         print(f"  Severity {sev}: 0 rows found!")
 
