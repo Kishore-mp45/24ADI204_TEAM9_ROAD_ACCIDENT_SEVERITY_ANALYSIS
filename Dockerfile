@@ -26,15 +26,14 @@ COPY backend/ ./backend/
 COPY main.py .
 COPY run.py .
 
+# Copy sample dataset (used when full dataset is not available)
+COPY US_Accidents_sample.csv .
+
 # Copy built React frontend from Stage 1
 COPY --from=frontend-builder /app/dashboard/dist ./dashboard/dist
-
-# Copy startup script, strip Windows CRLF, make executable
-COPY start.sh ./start.sh
-RUN sed -i 's/\r//' ./start.sh && chmod +x ./start.sh
 
 # Expose default port
 EXPOSE 8000
 
 # Python reads PORT from environment directly — no shell expansion needed
-CMD ["python", "-c", "import os, uvicorn; uvicorn.run('backend.main:app', host='0.0.0.0', port=int(os.environ.get('PORT', 8000)))"]
+CMD ["python", "run.py"]
