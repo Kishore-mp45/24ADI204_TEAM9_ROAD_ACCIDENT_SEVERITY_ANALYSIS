@@ -209,7 +209,7 @@ export default function TemporalTrendsPage() {
                   <YAxis {...AXIS_STYLE} tickFormatter={(v: number) => `${(v * 100).toFixed(0)}%`} />
                   <Tooltip
                     {...TOOLTIP_STYLE}
-                    formatter={(v: number, name: string) => [`${(v * 100).toFixed(1)}%`, name]}
+                    formatter={(v: number, name: string) => [`${v.toFixed(1)}%`, name]}
                   />
                   <Legend wrapperStyle={{ fontSize: 11, color: "#94a3b8" }} verticalAlign="bottom" height={30} />
                   {severityKeys.map((key) => (
