@@ -1,6 +1,6 @@
-# Datasets and large files
+# Datasets and large files — full dataset excluded, sample allowed
 US_Accidents_March23.csv
-*.csv
+!US_Accidents_sample.csv
 
 # Python cache and environments
 __pycache__/

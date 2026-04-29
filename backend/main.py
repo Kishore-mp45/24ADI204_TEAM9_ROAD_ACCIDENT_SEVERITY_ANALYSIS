@@ -28,10 +28,23 @@ global_pca_df = None
 
 def load_data():
     global global_df
-    print("Loading 200,000 row sampled dataset...")
-    # Support Railway volume via CSV_PATH env variable, fallback to local path
-    default_path = os.path.join(os.path.dirname(__file__), "..", "US_Accidents_March23.csv")
-    csv_path = os.environ.get("CSV_PATH", default_path)
+    print("Loading dataset...")
+    base_dir = os.path.join(os.path.dirname(__file__), "..")
+
+    # Priority: ENV var → full dataset → sample dataset
+    csv_path = os.environ.get("CSV_PATH")
+    if not csv_path:
+        full_path = os.path.join(base_dir, "US_Accidents_March23.csv")
+        sample_path = os.path.join(base_dir, "US_Accidents_sample.csv")
+        if os.path.exists(full_path):
+            csv_path = full_path
+            print("Using full dataset (200K rows)...")
+        elif os.path.exists(sample_path):
+            csv_path = sample_path
+            print("Full dataset not found — using sample dataset (50K rows)...")
+        else:
+            print("Error: No dataset found. Set CSV_PATH or add US_Accidents_sample.csv")
+            return None
 
     try:
         df = pd.read_csv(csv_path, nrows=200000)
