@@ -287,38 +287,6 @@ export default function MetricsPage() {
           </ChartCard>
         </div>
 
-        {/* Row 3: Top 15 States (Chart #12) */}
-        <div className="col-span-12">
-          <ChartCard 
-            title="Top 15 Most Accident-Prone States" 
-            subtitle="By total accident count" 
-            loading={statesLoading} 
-            height={380}
-            interpretation={
-              <ul className="list-disc pl-4 marker:text-[#6ea8fe]">
-                <li>California overwhelmingly produces the highest incident aggregation, heavily driving massive dataset skews geographically.</li>
-                <li>Florida and Texas maintain significant volumes aligned closely with their immense contiguous population densities.</li>
-              </ul>
-            }  
-          >
-            {statesData && (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={statesData} layout="vertical" barCategoryGap="14%">
-                  <CartesianGrid {...GRID_STYLE} horizontal={false} />
-                  <XAxis type="number" {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-                  <YAxis type="category" dataKey="state" width={100} {...AXIS_STYLE} tickLine={false} axisLine={false} interval={0} tickFormatter={(v: string) => STATE_MAP[v] || v} />
-                  <Tooltip {...TOOLTIP_STYLE} formatter={(value: number, name: string, props: any) => [value.toLocaleString(), STATE_MAP[props.payload.state] || props.payload.state]} />
-                  <Bar dataKey="accidents" radius={[0, 6, 6, 0]} animationDuration={1200}>
-                    {statesData.map((_: unknown, i: number) => {
-                      const intensity = 0.3 + (1 - i / statesData.length) * 0.7;
-                      return <Cell key={i} fill={`rgba(110, 168, 254, ${intensity})`} />;
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-        </div>
       </div>
     </div>
   );

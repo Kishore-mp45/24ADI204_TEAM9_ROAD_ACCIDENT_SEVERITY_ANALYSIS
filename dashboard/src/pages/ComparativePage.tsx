@@ -1,10 +1,10 @@
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  ComposedChart, Line, Cell,
+  ComposedChart, Line,
 } from "recharts";
 import { ChartCard } from "@/components/ui/ChartCard";
-import { fetchDualAxisMonthly, fetchTopStates, fetchWeatherStacked } from "@/lib/api";
-import { AXIS_STYLE, GRID_STYLE, SEVERITY_COLORS, STATE_MAP, useAsyncData } from "@/lib/charts";
+import { fetchDualAxisMonthly, fetchWeatherStacked } from "@/lib/api";
+import { AXIS_STYLE, GRID_STYLE, SEVERITY_COLORS, useAsyncData } from "@/lib/charts";
 
 const TT = {
   contentStyle: { background: "rgba(11,17,32,0.95)", border: "1px solid rgba(148,163,184,0.12)", borderRadius: "0.75rem" },
@@ -12,32 +12,16 @@ const TT = {
   labelStyle: { color: "#f1f5f9", fontWeight: 600 as const },
 };
 
-// ── Dot Plot shape ──
-const DotShape = (props: any) => {
-  const { x, y, width, height, fill } = props;
-  const cx = x + width / 2;
-  const barY = y + height / 2;
-  return (
-    <g>
-      <line x1={10} y1={barY} x2={cx + width / 2 - 5} y2={barY} stroke={fill} strokeWidth={1.5} strokeOpacity={0.4} strokeDasharray="3 2" />
-      <circle cx={cx + width / 2 - 5} cy={barY} r={7} fill={fill} stroke="#060a10" strokeWidth={1.5} />
-    </g>
-  );
-};
-
 export default function ComparativePage() {
   const { data: dualData, loading: dualLoading } = useAsyncData(fetchDualAxisMonthly);
-  const { data: statesData, loading: statesLoading } = useAsyncData(fetchTopStates);
   const { data: weatherData, loading: weatherLoading } = useAsyncData(fetchWeatherStacked);
-
-  const statesSorted = Array.isArray(statesData) ? [...statesData].sort((a: any, b: any) => a.accidents - b.accidents) : [];
 
   return (
     <div>
       <div className="mb-10">
         <h2 className="text-4xl font-extrabold text-[var(--color-text-primary)] tracking-tight mb-2">Comparative Analysis</h2>
         <p className="text-[var(--color-text-secondary)] max-w-2xl leading-relaxed">
-          Compare conditions, severity shifts, and time periods using dot plots, stacked proportions, and dual-axis storytelling.
+          Compare conditions, severity shifts, and time periods using stacked proportions and dual-axis storytelling.
         </p>
       </div>
 
@@ -74,39 +58,8 @@ export default function ComparativePage() {
           </ChartCard>
         </div>
 
-        {/* Dot Plot */}
-        <div className="col-span-12 lg:col-span-5">
-          <ChartCard title="Dot Plot — Top 15 Accident-Prone States"
-            subtitle="Minimalist dot chart — cleaner alternative to bar chart"
-            loading={statesLoading} height={440}
-            interpretation={
-              <ul className="list-disc pl-4 marker:text-[#34d399]">
-                <li>California's dot sits far to the right of all others, visually isolating its extreme accident volume dominance.</li>
-                <li>The dot format reduces visual weight compared to bars, making it easier to spot the gap between top-3 states and the remaining cluster.</li>
-                <li>States beyond rank 5 converge into a tight cluster, suggesting relatively uniform moderate-risk profiles for the majority of US states.</li>
-              </ul>
-            }
-          >
-            {statesSorted.length > 0 && (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={statesSorted} layout="vertical" barSize={14} margin={{ left: 105, right: 20, top: 10, bottom: 10 }}>
-                  <CartesianGrid {...GRID_STYLE} horizontal={false} />
-                  <XAxis type="number" {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-                  <YAxis type="category" dataKey="state" width={100} {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: string) => STATE_MAP[v] || v} />
-                  <Tooltip {...TT} formatter={(v: number) => [v.toLocaleString(), "Accidents"]} />
-                  <Bar dataKey="accidents" shape={<DotShape />} animationDuration={1200}>
-                    {statesSorted.map((_: any, i: number) => (
-                      <Cell key={i} fill={`rgba(110,168,254,${0.35 + (i / statesSorted.length) * 0.65})`} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </ChartCard>
-        </div>
-
-        {/* Dual Axis */}
-        <div className="col-span-12 lg:col-span-7">
+        {/* Dual Axis — full width now */}
+        <div className="col-span-12">
           <ChartCard title="Dual-Axis Chart — Monthly Count + Average Severity"
             subtitle="Bars = accident volume (left axis) | Line = avg severity (right axis)"
             loading={dualLoading} height={440}
