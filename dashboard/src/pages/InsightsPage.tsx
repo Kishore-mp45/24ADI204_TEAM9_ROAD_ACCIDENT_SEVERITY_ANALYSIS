@@ -49,7 +49,7 @@ export default function InsightsPage() {
                   <CartesianGrid {...GRID_STYLE} />
                   <XAxis dataKey="weather" {...AXIS_STYLE} tickLine={false} axisLine={false} tick={{ fill: "#f8fafc", fontSize: 9 }} interval={0} angle={-15} textAnchor="end" height={50} />
                   <YAxis {...AXIS_STYLE} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
-                  <Tooltip {...TOOLTIP_STYLE} formatter={(value: number) => [`${value}%`, ""]} />
+                  <Tooltip {...TOOLTIP_STYLE} formatter={(value: number, name: string) => [`${value}%`, name]} />
                   <Legend wrapperStyle={{ fontSize: 11, color: "#94a3b8" }} />
                   {["sev1", "sev2", "sev3", "sev4"].map((key, i) => (
                     <Bar key={key} dataKey={key} stackId="weather" fill={SEVERITY_COLORS[i]} name={`Severity ${i + 1}`}
