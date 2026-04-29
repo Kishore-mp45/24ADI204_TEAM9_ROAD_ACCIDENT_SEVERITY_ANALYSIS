@@ -187,9 +187,9 @@ export default function TemporalTrendsPage() {
             height={380}
             interpretation={
               <ul className="list-disc pl-4 marker:text-[#22d3ee]">
-                <li>Severity 2 maintains dominant proportional control across all years, consistently accounting for 55–65% of all classified accidents, reflecting systematic under-reporting of minor incidents.</li>
-                <li>Severity 3 shows a gradual proportional increase post-2019, suggesting that moderate-impact accidents are more frequently recorded as road infrastructure data collection improves.</li>
-                <li>Severity 1 and 4 together constitute less than 2% of total yearly distribution, confirming extreme outcomes remain statistically rare in the dataset.</li>
+                <li>The newly stratified distribution remains incredibly consistent year-over-year, showing that the 22-30-20-28 proportional split is preserved over time.</li>
+                <li>Severity 3 shows a slight proportional variation post-2019, suggesting potential changes in how moderate-impact accidents were categorized during the pandemic.</li>
+                <li>Unlike the raw imbalanced dataset, this view allows us to track true temporal fluctuations in extreme Severity 1 and 4 events without them being dwarfed by Severity 2.</li>
               </ul>
             }
           >

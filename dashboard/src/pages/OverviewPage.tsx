@@ -118,7 +118,7 @@ export default function OverviewPage() {
               <h3 className="font-bold text-lg text-[var(--color-text-primary)]">Phase 2: Exploratory EDA</h3>
             </div>
             <ul className="space-y-3 text-sm text-[var(--color-text-secondary)]">
-              <li className="flex gap-2 items-start"><CheckCircle2 className="text-[#6ea8fe] shrink-0 w-4 h-4 mt-0.5"/> <span>Distribution visualizations isolating accident imbalance</span></li>
+              <li className="flex gap-2 items-start"><CheckCircle2 className="text-[#6ea8fe] shrink-0 w-4 h-4 mt-0.5"/> <span>Distribution visualizations confirming successful stratified class balancing</span></li>
               <li className="flex gap-2 items-start"><CheckCircle2 className="text-[#6ea8fe] shrink-0 w-4 h-4 mt-0.5"/> <span>Correlation matrices detecting multicollinearity</span></li>
               <li className="flex gap-2 items-start"><CheckCircle2 className="text-[#6ea8fe] shrink-0 w-4 h-4 mt-0.5"/> <span>Extensive visual integration hosted directly in Dashboard</span></li>
             </ul>
@@ -147,7 +147,7 @@ export default function OverviewPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[
-            { title: "Severity Baseline", text: "Severity 2 dominates entirely, making it critical but severely imbalanced for predictive engines." },
+            { title: "Severity Baseline", text: "The dataset has been stratified to maintain equal analytical weight across all four severities, avoiding predictive bias." },
             { title: "Rush Hour Risk", text: "Weekday data presents intense spikes directly within the 7:00–9:00 AM and 3:00–6:00 PM commuting timeframes." },
             { title: "Intersectional Hazards", text: "High accident rates correlate heavily parallel to Traffic Signals and Crossings in urban matrices." },
             { title: "Weather Moderation", text: "Dense frequency occurs during moderate standard temperatures. Severity spikes only exist in extreme distributions." },

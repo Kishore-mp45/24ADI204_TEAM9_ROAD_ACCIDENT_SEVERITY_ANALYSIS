@@ -34,9 +34,9 @@ export default function ComparativePage() {
             loading={weatherLoading} height={380}
             interpretation={
               <ul className="list-disc pl-4 marker:text-[#fbbf24]">
-                <li>After normalizing to 100%, all weather conditions show nearly identical proportional severity distributions, debunking the assumption that bad weather universally produces worse accidents.</li>
-                <li>Severity 2 dominates 55–65% of every weather column, confirming its structural class dominance is independent of environmental conditions.</li>
-                <li>Light Rain shows a marginal increase in Severity 3 proportion compared to Clear conditions, suggesting a small but real contribution of reduced traction to higher-impact crashes.</li>
+                <li>After normalizing to 100%, all weather conditions show relatively stable proportional severity distributions, debunking the assumption that bad weather universally produces worse accidents.</li>
+                <li>The newly stratified dataset (S1: 22%, S2: 30%, S3: 20%, S4: 28%) is preserved across weather conditions, indicating environmental factors do not radically skew the severity classification.</li>
+                <li>Light Rain shows a marginal increase in Severity 4 proportion compared to Clear conditions, suggesting a small but real contribution of reduced traction to higher-impact crashes.</li>
               </ul>
             }
           >

@@ -7,7 +7,7 @@ interface ChartCardProps {
   className?: string;
   action?: ReactNode;
   loading?: boolean;
-  height?: number;
+  height?: number | string;
   interpretation?: ReactNode;
 }
 

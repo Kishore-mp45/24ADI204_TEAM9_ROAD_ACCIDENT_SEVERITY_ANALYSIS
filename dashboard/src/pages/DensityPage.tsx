@@ -154,7 +154,7 @@ export default function DensityPage() {
             title="Calendar Heatmap — Daily Accident Intensity"
             subtitle="GitHub-style daily accident count heatmap — hover any cell to see exact date & count"
             loading={calLoading}
-            height={580}
+            height={"auto"}
             interpretation={
               <ul className="list-disc pl-4 marker:text-[#22d3ee]">
                 <li>The annual calendar clearly shows high-intensity clusters (darker blue cells) appearing consistently during autumn and winter months (Oct–Jan), aligning with adverse seasonal driving conditions.</li>

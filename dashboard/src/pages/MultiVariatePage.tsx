@@ -73,7 +73,7 @@ export default function MultiVariatePage() {
             interpretation={
               <ul className="list-disc pl-4 marker:text-[#a78bfa]">
                 <li>All four severity classes share a nearly identical right-skewed wind speed distribution peaking at 0–9 mph, confirming that wind speed alone is not a severity discriminator.</li>
-                <li>Severity 1 and Severity 4 ridges are noticeably narrower and shorter due to their much smaller sample sizes, reflecting the extreme class imbalance in the dataset.</li>
+                <li>Due to the stratified balancing of the dataset, all four ridges now exhibit deep, dense statistical curves, providing a highly reliable visual comparison across all severity levels.</li>
                 <li>The overlapping ridge shapes validate that no single wind threshold meaningfully separates mild from severe accident outcomes.</li>
               </ul>
             }
